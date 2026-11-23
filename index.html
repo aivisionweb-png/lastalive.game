@@ -2,91 +2,72 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>LAST//ALIVE — OPEN WORLD</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LAST//ALIVE</title>
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
 
-  <canvas id="game"></canvas>
+<canvas id="game"></canvas>
 
-  <div id="hud">
-    <div class="top-left">
-      <div class="brand">LAST<span>//</span>ALIVE</div>
+<div id="hud">
+  <div class="logo">LAST<span>//</span>ALIVE</div>
 
-      <div class="health-box">
-        <div class="label">HEALTH</div>
-        <div class="health-bg">
-          <div id="healthBar"></div>
-        </div>
-        <b id="healthText">100</b>
-      </div>
+  <div class="stats">
+    <div class="health">
+      <small>HEALTH</small>
+      <div class="bar"><i id="healthBar"></i></div>
+      <b id="healthText">100</b>
     </div>
 
-    <div class="top-right">
-      <div class="weapon">
-        <small>WEAPON</small>
-        <strong id="weaponName">PISTOL</strong>
-      </div>
-
-      <div class="ammo">
-        <strong id="ammo">12</strong>
-        <span>/ 48</span>
-      </div>
-    </div>
-
-    <div id="mission">
-      <small>MISSION</small>
-      <strong>STAY ALIVE</strong>
-      <span>Eliminate hostile targets</span>
-    </div>
-
-    <div id="crosshair"></div>
-
-    <div id="damageFlash"></div>
-
-    <div id="killFeed"></div>
-
-    <div id="minimap">
-      <canvas id="mapCanvas" width="180" height="180"></canvas>
-      <div class="map-title">CITY MAP</div>
-    </div>
-
-    <div id="controls">
-      <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>
-      <span>MOVE</span>
-      <kbd>SHIFT</kbd><span>SPRINT</span>
-      <kbd>R</kbd><span>RELOAD</span>
-      <kbd>1</kbd><span>PISTOL</span>
-      <kbd>2</kbd><span>RIFLE</span>
-    </div>
-  </div>
-
-  <div id="startScreen">
-    <div class="start-inner">
-      <div class="eyebrow">OPEN WORLD / SURVIVAL</div>
-      <h1>LAST<span>//</span>ALIVE</h1>
-      <p>ENTER THE CITY. FIND WEAPONS. STAY ALIVE.</p>
-
-      <button id="startBtn">
-        ENTER CITY
-        <b>→</b>
-      </button>
-
-      <div class="start-info">
-        WASD TO MOVE &nbsp; • &nbsp; MOUSE TO AIM &nbsp; • &nbsp; CLICK TO FIRE
+    <div class="weapon">
+      <small>WEAPON</small>
+      <strong>ASSAULT RIFLE</strong>
+      <div>
+        <b id="ammo">30</b>
+        <span>/ 120</span>
       </div>
     </div>
   </div>
 
-  <div id="deathScreen">
-    <div>
-      <div class="eyebrow">YOU DIED</div>
-      <h2>MISSION<br><span>FAILED.</span></h2>
-      <button id="restartBtn">RESPAWN</button>
-    </div>
-  </div>
+  <div id="crosshair">+</div>
 
-  <script src="./script.js"></script>
+  <div class="controls">
+    WASD MOVE &nbsp; • &nbsp;
+    SHIFT SPRINT &nbsp; • &nbsp;
+    SPACE JUMP &nbsp; • &nbsp;
+    C CROUCH &nbsp; • &nbsp;
+    MOUSE AIM &nbsp; • &nbsp;
+    CLICK SHOOT
+  </div>
+</div>
+
+<div id="start">
+  <div class="startBox">
+    <div class="mini">OPEN WORLD / SURVIVAL</div>
+    <h1>LAST<span>//</span>ALIVE</h1>
+    <p>ENTER THE CITY</p>
+    <button id="play">PLAY GAME</button>
+  </div>
+</div>
+
+<div id="dead">
+  <div>
+    <div class="mini">YOU DIED</div>
+    <h2>MISSION<br><span>FAILED.</span></h2>
+    <button onclick="location.reload()">RESPAWN</button>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module" src="./script.js"></script>
+
 </body>
 </html>
