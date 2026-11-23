@@ -6,58 +6,122 @@
   <title>LAST//ALIVE</title>
   <link rel="stylesheet" href="./style.css">
 </head>
+
 <body>
 
 <canvas id="game"></canvas>
 
 <div id="hud">
-  <div class="logo">LAST<span>//</span>ALIVE</div>
+
+  <div class="logo">
+    LAST<span>//</span>ALIVE
+  </div>
+
+  <div class="mission">
+    <small>MISSION</small>
+    <b>ELIMINATE HOSTILES</b>
+    <span>STAY ALIVE</span>
+  </div>
 
   <div class="stats">
+
     <div class="health">
       <small>HEALTH</small>
-      <div class="bar"><i id="healthBar"></i></div>
+      <div class="healthTrack">
+        <div id="healthBar"></div>
+      </div>
       <b id="healthText">100</b>
     </div>
 
     <div class="weapon">
       <small>WEAPON</small>
       <strong>ASSAULT RIFLE</strong>
-      <div>
+
+      <div class="ammo">
         <b id="ammo">30</b>
         <span>/ 120</span>
       </div>
     </div>
+
   </div>
 
-  <div id="crosshair">+</div>
+  <div id="crosshair">
+    <i></i>
+    <i></i>
+    <i></i>
+    <i></i>
+    <b></b>
+  </div>
+
+  <div id="hitmarker">×</div>
+
+  <div id="damage"></div>
 
   <div class="controls">
-    WASD MOVE &nbsp; • &nbsp;
-    SHIFT SPRINT &nbsp; • &nbsp;
-    SPACE JUMP &nbsp; • &nbsp;
-    C CROUCH &nbsp; • &nbsp;
-    MOUSE AIM &nbsp; • &nbsp;
-    CLICK SHOOT
+    <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>
+    MOVE
+    <kbd>SHIFT</kbd> SPRINT
+    <kbd>SPACE</kbd> JUMP
+    <kbd>C</kbd> CROUCH
+    <kbd>R</kbd> RELOAD
+    <span>•</span>
+    MOUSE AIM / CLICK FIRE
   </div>
+
 </div>
 
-<div id="start">
-  <div class="startBox">
-    <div class="mini">OPEN WORLD / SURVIVAL</div>
-    <h1>LAST<span>//</span>ALIVE</h1>
-    <p>ENTER THE CITY</p>
-    <button id="play">PLAY GAME</button>
+
+<div id="startScreen">
+
+  <div class="startContent">
+
+    <div class="eyebrow">
+      OPEN WORLD / SURVIVAL
+    </div>
+
+    <h1>
+      LAST<span>//</span>ALIVE
+    </h1>
+
+    <p>
+      ENTER THE CITY. FIND THE HOSTILES. SURVIVE.
+    </p>
+
+    <button id="playButton">
+      ENTER CITY
+      <span>→</span>
+    </button>
+
+    <div class="hint">
+      BEST EXPERIENCE WITH MOUSE + KEYBOARD
+    </div>
+
   </div>
+
 </div>
 
-<div id="dead">
+
+<div id="deathScreen">
+
   <div>
-    <div class="mini">YOU DIED</div>
-    <h2>MISSION<br><span>FAILED.</span></h2>
-    <button onclick="location.reload()">RESPAWN</button>
+
+    <div class="eyebrow">
+      SIGNAL LOST
+    </div>
+
+    <h2>
+      YOU'RE<br>
+      <span>DEAD.</span>
+    </h2>
+
+    <button id="respawn">
+      RESPAWN
+    </button>
+
   </div>
+
 </div>
+
 
 <script type="importmap">
 {
