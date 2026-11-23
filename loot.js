@@ -1,0 +1,5 @@
+export class LootSystem{
+ constructor(T,map,player,ui){this.T=T;this.map=map;this.player=player;this.ui=ui;this.items=[]}
+ spawn(n=25){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,r=50+Math.random()*340,x=Math.cos(a)*r,z=Math.sin(a)*r;const types=["ammo","medkit","armor"];const type=types[Math.floor(Math.random()*types.length)];const color=type==="ammo"?0xe0c25c:type==="medkit"?0x64e69b:0x6fa8df;const o=new this.T.Mesh(new this.T.BoxGeometry(1.2,1.2,1.2),new this.T.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.18}));o.position.set(x,.8,z);o.userData={type,phase:Math.random()*10};o.castShadow=true;this.map.root.add(o);this.items.push(o)}}
+ update(dt){for(const i of this.items){if(!i.visible)continue;i.rotation.y+=dt*1.8;i.position.y=.8+Math.sin(performance.now()*.003+i.userData.phase)*.15;if(i.position.distanceTo(this.player.object.position)<2.4){const t=i.userData.type;if(t==="ammo")this.ui.addAmmo(45);if(t==="medkit")this.player.hp=Math.min(100,this.player.hp+35);if(t==="armor")this.player.armor=Math.min(100,this.player.armor+35);i.visible=false;this.ui.toast(t.toUpperCase()+" PICKED UP")}}}
+}
