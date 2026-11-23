@@ -2,19 +2,23 @@
   box-sizing:border-box;
 }
 
-html,body{
+html,
+body{
   margin:0;
   width:100%;
   height:100%;
   overflow:hidden;
   background:#050706;
-  color:white;
+  color:#fff;
   font-family:Arial,Helvetica,sans-serif;
+  user-select:none;
 }
 
 #game{
   position:fixed;
   inset:0;
+  width:100%;
+  height:100%;
 }
 
 #hud{
@@ -25,11 +29,12 @@ html,body{
 
 .logo{
   position:absolute;
-  top:24px;
   left:28px;
+  top:24px;
   font-size:22px;
   font-weight:1000;
-  letter-spacing:-1px;
+  letter-spacing:-1.5px;
+  text-shadow:0 2px 10px #000;
 }
 
 .logo span,
@@ -38,19 +43,43 @@ h2 span{
   color:#b8ff32;
 }
 
+.mission{
+  position:absolute;
+  left:28px;
+  top:70px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.mission small{
+  color:#b8ff32;
+  font-size:8px;
+  letter-spacing:3px;
+}
+
+.mission b{
+  font-size:12px;
+}
+
+.mission span{
+  color:#8b948e;
+  font-size:9px;
+}
+
 .stats{
   position:absolute;
   top:24px;
   right:28px;
   display:flex;
-  gap:35px;
-  align-items:flex-end;
+  align-items:end;
+  gap:34px;
 }
 
 small{
   display:block;
-  color:#879089;
-  font-size:9px;
+  color:#858e87;
+  font-size:8px;
   letter-spacing:3px;
   margin-bottom:7px;
 }
@@ -59,25 +88,26 @@ small{
   position:relative;
 }
 
-.bar{
-  width:220px;
-  height:8px;
-  background:#252b27;
+.healthTrack{
+  width:230px;
+  height:7px;
+  background:#202621;
   overflow:hidden;
+  border-radius:20px;
 }
 
 #healthBar{
-  display:block;
   width:100%;
   height:100%;
   background:#b8ff32;
+  transition:width .15s;
 }
 
 #healthText{
   position:absolute;
-  right:-38px;
-  bottom:-4px;
-  font-size:13px;
+  right:-36px;
+  bottom:-5px;
+  font-size:12px;
 }
 
 .weapon{
@@ -85,19 +115,20 @@ small{
 }
 
 .weapon strong{
-  font-size:15px;
+  display:block;
+  font-size:13px;
   letter-spacing:1px;
 }
 
-.weapon div{
-  margin-top:4px;
+.ammo{
+  margin-top:3px;
 }
 
-.weapon div b{
-  font-size:30px;
+.ammo b{
+  font-size:32px;
 }
 
-.weapon div span{
+.ammo span{
   color:#68716b;
 }
 
@@ -105,46 +136,130 @@ small{
   position:absolute;
   left:50%;
   top:50%;
+  width:24px;
+  height:24px;
+  transform:translate(-50%,-50%);
+}
+
+#crosshair i{
+  position:absolute;
+  width:7px;
+  height:2px;
+  background:#fff;
+  box-shadow:0 0 5px #000;
+}
+
+#crosshair i:nth-child(1){
+  left:0;
+  top:11px;
+}
+
+#crosshair i:nth-child(2){
+  right:0;
+  top:11px;
+}
+
+#crosshair i:nth-child(3){
+  top:0;
+  left:11px;
+  width:2px;
+  height:7px;
+}
+
+#crosshair i:nth-child(4){
+  bottom:0;
+  left:11px;
+  width:2px;
+  height:7px;
+}
+
+#crosshair b{
+  position:absolute;
+  width:3px;
+  height:3px;
+  border-radius:50%;
+  background:#b8ff32;
+  left:11px;
+  top:11px;
+}
+
+#hitmarker{
+  position:absolute;
+  left:50%;
+  top:50%;
   transform:translate(-50%,-50%);
   color:#fff;
-  font-size:22px;
-  font-weight:300;
-  text-shadow:0 0 8px #000;
+  font-size:28px;
+  opacity:0;
+}
+
+#damage{
+  position:absolute;
+  inset:0;
+  background:#ff1726;
+  opacity:0;
 }
 
 .controls{
   position:absolute;
-  bottom:25px;
   left:50%;
+  bottom:24px;
   transform:translateX(-50%);
-  color:#7c857f;
-  font-size:9px;
+  color:#7c857e;
+  font-size:8px;
   letter-spacing:1px;
   white-space:nowrap;
+  text-shadow:0 2px 6px #000;
 }
 
-#start,
-#dead{
+.controls span{
+  margin:0 8px;
+}
+
+kbd{
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  min-width:23px;
+  height:22px;
+  padding:0 6px;
+  margin:0 3px;
+  color:#e9eee9;
+  border:1px solid #495049;
+  border-radius:4px;
+  background:#101410cc;
+  font-size:8px;
+  font-weight:800;
+}
+
+
+#startScreen,
+#deathScreen{
   position:fixed;
   inset:0;
+  z-index:20;
   display:grid;
   place-items:center;
   background:
-    radial-gradient(circle at center,#172019 0,#070908 50%,#020303 100%);
-  z-index:20;
+    radial-gradient(
+      circle at center,
+      #1b241e 0,
+      #080b09 45%,
+      #020303 100%
+    );
 }
 
-#dead{
+#deathScreen{
   display:none;
 }
 
-.startBox{
+.startContent{
   text-align:center;
 }
 
-.mini{
-  color:#8a938d;
-  font-size:10px;
+.eyebrow{
+  color:#858e88;
+  font-size:9px;
   letter-spacing:5px;
   margin-bottom:20px;
 }
@@ -153,41 +268,57 @@ h1{
   margin:0;
   font-size:clamp(70px,12vw,150px);
   line-height:.8;
-  letter-spacing:-9px;
+  letter-spacing:-10px;
   font-weight:1000;
 }
 
-.startBox p{
-  color:#8c958e;
-  letter-spacing:4px;
-  font-size:11px;
+.startContent p{
+  color:#8c958f;
+  font-size:10px;
+  letter-spacing:3px;
   margin:35px 0;
 }
 
 button{
+  width:270px;
+  height:55px;
   border:0;
+  border-radius:6px;
   background:#b8ff32;
   color:#071006;
-  width:260px;
-  height:55px;
+  font-size:12px;
   font-weight:1000;
   cursor:pointer;
-  border-radius:6px;
+  transition:.18s;
 }
 
 button:hover{
-  filter:brightness(1.1);
   transform:translateY(-2px);
+  filter:brightness(1.1);
+}
+
+button span{
+  float:right;
+  margin-right:15px;
+  font-size:18px;
+}
+
+.hint{
+  color:#505850;
+  font-size:8px;
+  letter-spacing:2px;
+  margin-top:22px;
 }
 
 h2{
-  font-size:100px;
-  line-height:.8;
-  letter-spacing:-7px;
   margin:0 0 35px;
+  font-size:110px;
+  line-height:.78;
+  letter-spacing:-8px;
 }
 
 @media(max-width:700px){
+
   .controls{
     display:none;
   }
@@ -198,11 +329,16 @@ h2{
   }
 
   .logo{
-    top:15px;
     left:15px;
+    top:15px;
   }
 
-  .bar{
-    width:120px;
+  .mission{
+    left:15px;
+    top:60px;
+  }
+
+  .healthTrack{
+    width:130px;
   }
 }
