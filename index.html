@@ -2,277 +2,91 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#070909">
-  <title>LAST//ALIVE</title>
-
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>LAST//ALIVE — OPEN WORLD</title>
+  <link rel="stylesheet" href="./style.css">
 </head>
-
 <body>
 
-  <div class="noise"></div>
+  <canvas id="game"></canvas>
 
-  <header class="topbar">
-    <div class="brand">
-      LAST<span>//</span>ALIVE
+  <div id="hud">
+    <div class="top-left">
+      <div class="brand">LAST<span>//</span>ALIVE</div>
+
+      <div class="health-box">
+        <div class="label">HEALTH</div>
+        <div class="health-bg">
+          <div id="healthBar"></div>
+        </div>
+        <b id="healthText">100</b>
+      </div>
     </div>
 
-    <div class="online">
-      <i></i>
-      SERVER ONLINE
+    <div class="top-right">
+      <div class="weapon">
+        <small>WEAPON</small>
+        <strong id="weaponName">PISTOL</strong>
+      </div>
+
+      <div class="ammo">
+        <strong id="ammo">12</strong>
+        <span>/ 48</span>
+      </div>
     </div>
-  </header>
 
-  <main>
+    <div id="mission">
+      <small>MISSION</small>
+      <strong>STAY ALIVE</strong>
+      <span>Eliminate hostile targets</span>
+    </div>
 
-    <!-- HOME -->
-    <section id="home" class="screen active">
+    <div id="crosshair"></div>
 
-      <div class="home-wrap">
+    <div id="damageFlash"></div>
 
-        <div class="eyebrow">
-          MULTIPLAYER SURVIVAL / 001
-        </div>
+    <div id="killFeed"></div>
 
-        <h1>
-          LAST<br>
-          <span>ALIVE.</span>
-        </h1>
+    <div id="minimap">
+      <canvas id="mapCanvas" width="180" height="180"></canvas>
+      <div class="map-title">CITY MAP</div>
+    </div>
 
-        <p class="tagline">
-          Move. Dodge. Outlast everyone.
-        </p>
+    <div id="controls">
+      <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>
+      <span>MOVE</span>
+      <kbd>SHIFT</kbd><span>SPRINT</span>
+      <kbd>R</kbd><span>RELOAD</span>
+      <kbd>1</kbd><span>PISTOL</span>
+      <kbd>2</kbd><span>RIFLE</span>
+    </div>
+  </div>
 
-        <div class="home-card">
+  <div id="startScreen">
+    <div class="start-inner">
+      <div class="eyebrow">OPEN WORLD / SURVIVAL</div>
+      <h1>LAST<span>//</span>ALIVE</h1>
+      <p>ENTER THE CITY. FIND WEAPONS. STAY ALIVE.</p>
 
-          <input
-            id="nameInput"
-            maxlength="14"
-            autocomplete="nickname"
-            placeholder="ENTER YOUR NAME"
-          >
+      <button id="startBtn">
+        ENTER CITY
+        <b>→</b>
+      </button>
 
-          <button id="createBtn" class="primary">
-            CREATE ROOM
-            <b>↗</b>
-          </button>
-
-          <div class="or">
-            <span></span>
-            OR JOIN A ROOM
-            <span></span>
-          </div>
-
-          <div class="join-row">
-
-            <input
-              id="roomInput"
-              maxlength="6"
-              placeholder="ROOM CODE"
-            >
-
-            <button id="joinBtn">
-              JOIN
-            </button>
-
-          </div>
-
-          <div id="homeError" class="error"></div>
-
-        </div>
-
-        <div class="rules">
-          <span>8 MAX</span>
-          <span>60 SEC</span>
-          <span>LAST PLAYER WINS</span>
-        </div>
-
+      <div class="start-info">
+        WASD TO MOVE &nbsp; • &nbsp; MOUSE TO AIM &nbsp; • &nbsp; CLICK TO FIRE
       </div>
+    </div>
+  </div>
 
-    </section>
+  <div id="deathScreen">
+    <div>
+      <div class="eyebrow">YOU DIED</div>
+      <h2>MISSION<br><span>FAILED.</span></h2>
+      <button id="restartBtn">RESPAWN</button>
+    </div>
+  </div>
 
-
-    <!-- LOBBY -->
-    <section id="lobby" class="screen">
-
-      <div class="lobby-wrap">
-
-        <div class="eyebrow">
-          PRIVATE MATCH / WAITING
-        </div>
-
-        <div class="room-title">
-
-          <div>
-            <small>ROOM</small>
-            <h2 id="roomCode">------</h2>
-          </div>
-
-          <button id="copyBtn" class="copy">
-            COPY CODE
-          </button>
-
-        </div>
-
-        <div class="lobby-card">
-
-          <div class="lobby-head">
-            <span>PLAYERS</span>
-            <b id="count">0/8</b>
-          </div>
-
-          <div id="playerList" class="players"></div>
-
-          <div class="lobby-tip">
-            Share the room code. Minimum 2 players to start.
-          </div>
-
-          <button
-            id="startBtn"
-            class="primary"
-            disabled
-          >
-            START ROUND
-            <b>→</b>
-          </button>
-
-          <button
-            id="leaveBtn"
-            class="ghost"
-          >
-            LEAVE ROOM
-          </button>
-
-          <div id="lobbyError" class="error"></div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- GAME -->
-    <section id="game" class="screen">
-
-      <div class="game-top">
-
-        <div class="hud-box">
-          <small>ROUND</small>
-          <strong id="round">1</strong>
-        </div>
-
-        <div class="timer">
-          <small>TIME</small>
-          <strong id="time">60</strong>
-        </div>
-
-        <div class="hud-box">
-          <small>ALIVE</small>
-          <strong id="alive">0</strong>
-        </div>
-
-      </div>
-
-
-      <div id="arena">
-
-        <div class="arena-vignette"></div>
-
-        <div class="grid"></div>
-
-        <div class="danger-ring"></div>
-
-        <div class="arena-center"></div>
-
-        <div id="entities"></div>
-
-        <div id="countdown" class="countdown"></div>
-
-      </div>
-
-
-      <div class="game-bottom">
-
-        <div class="controls">
-
-          <kbd>W</kbd>
-          <kbd>A</kbd>
-          <kbd>S</kbd>
-          <kbd>D</kbd>
-
-          <span>MOVE</span>
-
-        </div>
-
-        <div
-          id="gameStatus"
-          class="game-status"
-        >
-          SURVIVE
-        </div>
-
-        <button
-          id="gameLeave"
-          class="danger"
-        >
-          LEAVE
-        </button>
-
-      </div>
-
-    </section>
-
-
-    <!-- RESULT -->
-    <section id="result" class="screen">
-
-      <div class="result-wrap">
-
-        <div class="eyebrow">
-          ROUND COMPLETE
-        </div>
-
-        <div class="result-kicker">
-          WINNER
-        </div>
-
-        <h2 id="winner">—</h2>
-
-        <div
-          id="scores"
-          class="scores"
-        ></div>
-
-        <div class="result-actions">
-
-          <button
-            id="rematchBtn"
-            class="primary"
-          >
-            REMATCH
-            <b>↻</b>
-          </button>
-
-          <button
-            id="menuBtn"
-            class="ghost"
-          >
-            MAIN MENU
-          </button>
-
-        </div>
-
-      </div>
-
-    </section>
-
-  </main>
-
-
-  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
-  <script src="script.js"></script>
-
+  <script src="./script.js"></script>
 </body>
 </html>
