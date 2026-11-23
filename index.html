@@ -1,1057 +1,278 @@
-* {
-  box-sizing: border-box;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#070909">
+  <title>LAST//ALIVE</title>
 
-:root {
-  --bg: #070909;
-  --panel: #0e1210;
-  --line: #252b27;
-  --muted: #7f8982;
-  --white: #f4f6ef;
-  --lime: #b8ff3d;
-  --red: #ff4d55;
-}
+  <link rel="stylesheet" href="style.css">
+</head>
 
-html,
-body {
-  margin: 0;
-  min-height: 100%;
-  background: var(--bg);
-  color: var(--white);
-  font-family: Inter, Arial, sans-serif;
-}
+<body>
 
-body {
-  overflow-x: hidden;
-}
+  <div class="noise"></div>
 
-button,
-input {
-  font-family: inherit;
-}
+  <header class="topbar">
+    <div class="brand">
+      LAST<span>//</span>ALIVE
+    </div>
 
-.noise {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.035;
-  z-index: 9999;
+    <div class="online">
+      <i></i>
+      SERVER ONLINE
+    </div>
+  </header>
 
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
+  <main>
 
-.topbar {
-  height: 70px;
+    <!-- HOME -->
+    <section id="home" class="screen active">
 
-  border-bottom: 1px solid var(--line);
+      <div class="home-wrap">
 
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+        <div class="eyebrow">
+          MULTIPLAYER SURVIVAL / 001
+        </div>
 
-  padding: 0 30px;
+        <h1>
+          LAST<br>
+          <span>ALIVE.</span>
+        </h1>
 
-  position: relative;
-  z-index: 10;
+        <p class="tagline">
+          Move. Dodge. Outlast everyone.
+        </p>
 
-  background: #070909dd;
+        <div class="home-card">
 
-  backdrop-filter: blur(12px);
-}
+          <input
+            id="nameInput"
+            maxlength="14"
+            autocomplete="nickname"
+            placeholder="ENTER YOUR NAME"
+          >
 
-.brand {
-  font-weight: 950;
-  font-size: 21px;
-  letter-spacing: -0.8px;
-}
+          <button id="createBtn" class="primary">
+            CREATE ROOM
+            <b>↗</b>
+          </button>
 
-.brand span {
-  color: var(--lime);
-}
+          <div class="or">
+            <span></span>
+            OR JOIN A ROOM
+            <span></span>
+          </div>
 
-.online {
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: var(--muted);
-}
+          <div class="join-row">
 
-.online i {
-  display: inline-block;
+            <input
+              id="roomInput"
+              maxlength="6"
+              placeholder="ROOM CODE"
+            >
 
-  width: 7px;
-  height: 7px;
+            <button id="joinBtn">
+              JOIN
+            </button>
 
-  border-radius: 50%;
+          </div>
 
-  background: var(--lime);
+          <div id="homeError" class="error"></div>
 
-  box-shadow:
-    0 0 12px var(--lime);
+        </div>
 
-  margin-right: 8px;
-}
+        <div class="rules">
+          <span>8 MAX</span>
+          <span>60 SEC</span>
+          <span>LAST PLAYER WINS</span>
+        </div>
 
-.screen {
-  display: none;
+      </div>
 
-  min-height: calc(100vh - 70px);
-}
+    </section>
 
-.screen.active {
-  display: flex;
-}
 
+    <!-- LOBBY -->
+    <section id="lobby" class="screen">
 
-/* HOME */
+      <div class="lobby-wrap">
 
-.home-wrap,
-.lobby-wrap,
-.result-wrap {
-  width: min(660px, 92vw);
+        <div class="eyebrow">
+          PRIVATE MATCH / WAITING
+        </div>
 
-  margin: auto;
+        <div class="room-title">
 
-  text-align: center;
-}
+          <div>
+            <small>ROOM</small>
+            <h2 id="roomCode">------</h2>
+          </div>
 
-.eyebrow {
-  font-size: 10px;
-  letter-spacing: 4px;
+          <button id="copyBtn" class="copy">
+            COPY CODE
+          </button>
 
-  color: #7f8982;
+        </div>
 
-  margin-bottom: 18px;
-}
+        <div class="lobby-card">
 
-.home-wrap h1 {
-  font-size: clamp(76px, 15vw, 154px);
+          <div class="lobby-head">
+            <span>PLAYERS</span>
+            <b id="count">0/8</b>
+          </div>
 
-  line-height: 0.77;
+          <div id="playerList" class="players"></div>
 
-  letter-spacing: -10px;
+          <div class="lobby-tip">
+            Share the room code. Minimum 2 players to start.
+          </div>
 
-  margin: 0;
+          <button
+            id="startBtn"
+            class="primary"
+            disabled
+          >
+            START ROUND
+            <b>→</b>
+          </button>
 
-  font-weight: 950;
-}
+          <button
+            id="leaveBtn"
+            class="ghost"
+          >
+            LEAVE ROOM
+          </button>
 
-.home-wrap h1 span {
-  color: var(--lime);
-}
+          <div id="lobbyError" class="error"></div>
 
-.tagline {
-  color: #aab1ac;
+        </div>
 
-  font-size: 15px;
+      </div>
 
-  margin: 29px 0 27px;
-}
+    </section>
 
-.home-card,
-.lobby-card {
-  background:
-    linear-gradient(
-      145deg,
-      #111513,
-      #0b0e0d
-    );
 
-  border: 1px solid #2a302c;
+    <!-- GAME -->
+    <section id="game" class="screen">
 
-  border-radius: 18px;
+      <div class="game-top">
 
-  padding: 20px;
+        <div class="hud-box">
+          <small>ROUND</small>
+          <strong id="round">1</strong>
+        </div>
 
-  box-shadow:
-    0 30px 100px #0009;
-}
+        <div class="timer">
+          <small>TIME</small>
+          <strong id="time">60</strong>
+        </div>
 
-input {
-  height: 52px;
+        <div class="hud-box">
+          <small>ALIVE</small>
+          <strong id="alive">0</strong>
+        </div>
 
-  width: 100%;
+      </div>
 
-  background: #070909;
 
-  border: 1px solid #303732;
+      <div id="arena">
 
-  border-radius: 11px;
+        <div class="arena-vignette"></div>
 
-  color: #fff;
+        <div class="grid"></div>
 
-  padding: 0 16px;
+        <div class="danger-ring"></div>
 
-  font-size: 13px;
+        <div class="arena-center"></div>
 
-  letter-spacing: 1px;
+        <div id="entities"></div>
 
-  outline: none;
+        <div id="countdown" class="countdown"></div>
 
-  text-transform: uppercase;
-}
+      </div>
 
-input:focus {
-  border-color: var(--lime);
 
-  box-shadow:
-    0 0 0 3px #b8ff3d12;
-}
+      <div class="game-bottom">
 
-button {
-  height: 52px;
+        <div class="controls">
 
-  border: 0;
+          <kbd>W</kbd>
+          <kbd>A</kbd>
+          <kbd>S</kbd>
+          <kbd>D</kbd>
 
-  border-radius: 11px;
+          <span>MOVE</span>
 
-  background: #242a27;
+        </div>
 
-  color: #fff;
+        <div
+          id="gameStatus"
+          class="game-status"
+        >
+          SURVIVE
+        </div>
 
-  font-weight: 900;
+        <button
+          id="gameLeave"
+          class="danger"
+        >
+          LEAVE
+        </button>
 
-  letter-spacing: 0.3px;
+      </div>
 
-  cursor: pointer;
+    </section>
 
-  transition:
-    0.16s transform,
-    0.16s filter;
-}
 
-button:hover {
-  filter: brightness(1.08);
-}
+    <!-- RESULT -->
+    <section id="result" class="screen">
 
-button:active {
-  transform: scale(0.98);
-}
+      <div class="result-wrap">
 
-button:disabled {
-  opacity: 0.35;
+        <div class="eyebrow">
+          ROUND COMPLETE
+        </div>
 
-  cursor: not-allowed;
+        <div class="result-kicker">
+          WINNER
+        </div>
 
-  transform: none;
-}
+        <h2 id="winner">—</h2>
 
-.primary {
-  width: 100%;
+        <div
+          id="scores"
+          class="scores"
+        ></div>
 
-  background: var(--lime);
+        <div class="result-actions">
 
-  color: #071006;
-}
+          <button
+            id="rematchBtn"
+            class="primary"
+          >
+            REMATCH
+            <b>↻</b>
+          </button>
 
-.primary:hover {
-  transform: translateY(-1px);
-}
+          <button
+            id="menuBtn"
+            class="ghost"
+          >
+            MAIN MENU
+          </button>
 
-.primary b {
-  float: right;
+        </div>
 
-  font-size: 17px;
-}
+      </div>
 
-.home-card > input {
-  margin-bottom: 10px;
-}
+    </section>
 
-.or {
-  display: flex;
+  </main>
 
-  align-items: center;
 
-  gap: 12px;
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <script src="script.js"></script>
 
-  color: #707972;
-
-  font-size: 9px;
-
-  letter-spacing: 3px;
-
-  margin: 17px 0;
-}
-
-.or span {
-  height: 1px;
-
-  background: #292e2b;
-
-  flex: 1;
-}
-
-.join-row {
-  display: flex;
-
-  gap: 8px;
-}
-
-.join-row input {
-  flex: 1;
-}
-
-.join-row button {
-  width: 115px;
-}
-
-.error {
-  min-height: 18px;
-
-  color: #ff666d;
-
-  font-size: 12px;
-
-  margin-top: 11px;
-}
-
-.rules {
-  display: flex;
-
-  justify-content: center;
-
-  gap: 25px;
-
-  color: #626b65;
-
-  font-size: 9px;
-
-  letter-spacing: 2px;
-
-  margin-top: 18px;
-}
-
-
-/* LOBBY */
-
-.lobby-wrap {
-  width: min(700px, 92vw);
-}
-
-.room-title {
-  display: flex;
-
-  align-items: end;
-
-  justify-content: space-between;
-
-  margin-bottom: 17px;
-}
-
-.room-title small {
-  font-size: 9px;
-
-  color: #737c76;
-
-  letter-spacing: 3px;
-}
-
-.room-title h2 {
-  margin: 2px 0 0;
-
-  font-size: 58px;
-
-  line-height: 1;
-
-  letter-spacing: 6px;
-
-  color: var(--lime);
-}
-
-.copy {
-  height: 38px;
-
-  font-size: 10px;
-
-  padding: 0 14px;
-}
-
-.lobby-card {
-  text-align: left;
-}
-
-.lobby-head {
-  display: flex;
-
-  justify-content: space-between;
-
-  color: #7d8780;
-
-  font-size: 10px;
-
-  letter-spacing: 2px;
-}
-
-.lobby-head b {
-  color: var(--lime);
-}
-
-.players {
-  display: grid;
-
-  gap: 8px;
-
-  margin: 15px 0;
-}
-
-.player {
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  padding: 14px 15px;
-
-  background: #171c19;
-
-  border: 1px solid #292f2b;
-
-  border-radius: 10px;
-}
-
-.player.host {
-  border-color: #829e57;
-}
-
-.player.me {
-  box-shadow:
-    inset 3px 0 0 var(--lime);
-}
-
-.player-name {
-  font-weight: 800;
-}
-
-.player-meta {
-  font-size: 9px;
-
-  color: #7d8780;
-
-  letter-spacing: 1px;
-}
-
-.player.host .player-meta {
-  color: var(--lime);
-}
-
-.lobby-tip {
-  text-align: center;
-
-  color: #69736c;
-
-  font-size: 10px;
-
-  margin: 13px 0 16px;
-}
-
-.ghost {
-  width: 100%;
-
-  margin-top: 9px;
-
-  background: #171b19;
-
-  color: #aab2ac;
-}
-
-
-/* GAME */
-
-#game {
-  position: relative;
-
-  flex-direction: column;
-
-  align-items: center;
-
-  justify-content: center;
-
-  padding: 70px 20px 35px;
-
-  gap: 13px;
-
-  background:
-    radial-gradient(
-      circle at 50% 45%,
-      #101610 0,
-      #070909 58%,
-      #050606 100%
-    );
-}
-
-.game-top {
-  display: flex;
-
-  align-items: center;
-
-  gap: 12px;
-
-  position: relative;
-
-  z-index: 5;
-}
-
-.hud-box,
-.timer {
-  min-width: 86px;
-
-  padding: 9px 13px;
-
-  border: 1px solid #2d342f;
-
-  background: #0c100edd;
-
-  border-radius: 10px;
-
-  text-align: center;
-}
-
-.hud-box small,
-.timer small {
-  display: block;
-
-  color: #68736c;
-
-  font-size: 8px;
-
-  letter-spacing: 2px;
-}
-
-.hud-box strong,
-.timer strong {
-  font-size: 21px;
-
-  color: #dfe5df;
-}
-
-.timer {
-  min-width: 100px;
-
-  border-color: #3d493e;
-}
-
-.timer strong {
-  color: var(--lime);
-}
-
-
-/* ARENA */
-
-#arena {
-  width: min(78vw, 700px);
-
-  height: min(78vw, 700px);
-
-  max-height: 68vh;
-
-  min-height: 360px;
-
-  background:
-    radial-gradient(
-      circle at center,
-      #18201b 0%,
-      #0c110e 45%,
-      #060807 100%
-    );
-
-  border: 2px solid #384039;
-
-  border-radius: 18px;
-
-  position: relative;
-
-  overflow: hidden;
-
-  box-shadow:
-    0 0 90px #000,
-    inset 0 0 70px #000;
-
-  isolation: isolate;
-}
-
-.grid {
-  position: absolute;
-
-  inset: 0;
-
-  background-image:
-    linear-gradient(
-      #d9e6d608 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      #d9e6d608 1px,
-      transparent 1px
-    );
-
-  background-size: 40px 40px;
-
-  opacity: 0.8;
-}
-
-.arena-vignette {
-  position: absolute;
-
-  inset: 0;
-
-  z-index: 8;
-
-  pointer-events: none;
-
-  background:
-    radial-gradient(
-      circle,
-      transparent 45%,
-      #0009 100%
-    );
-}
-
-.danger-ring {
-  position: absolute;
-
-  inset: 8%;
-
-  border:
-    1px dashed
-    #b8ff3d1c;
-
-  border-radius: 50%;
-
-  z-index: 1;
-}
-
-.arena-center {
-  position: absolute;
-
-  left: 50%;
-  top: 50%;
-
-  width: 8px;
-  height: 8px;
-
-  transform: translate(-50%, -50%);
-
-  background: var(--lime);
-
-  border-radius: 50%;
-
-  box-shadow:
-    0 0 18px var(--lime);
-
-  opacity: 0.4;
-
-  z-index: 2;
-}
-
-#entities {
-  position: absolute;
-
-  inset: 0;
-
-  z-index: 4;
-}
-
-.entity {
-  position: absolute;
-
-  transform:
-    translate(-50%, -50%);
-
-  pointer-events: none;
-}
-
-.playerDot {
-  width: 30px;
-  height: 30px;
-
-  border-radius: 50%;
-
-  background: var(--lime);
-
-  border: 3px solid #f8fff0;
-
-  box-shadow:
-    0 0 10px #b8ff3d,
-    0 0 28px #b8ff3d88;
-
-  transition:
-    left 0.07s linear,
-    top 0.07s linear;
-}
-
-.playerDot.enemy {
-  background: var(--red);
-
-  border-color: #ffd6d8;
-
-  box-shadow:
-    0 0 10px #ff4d55,
-    0 0 25px #ff4d5588;
-}
-
-.playerDot.dead {
-  filter: grayscale(1);
-
-  opacity: 0.12;
-
-  box-shadow: none;
-}
-
-.player-label {
-  position: absolute;
-
-  top: 34px;
-
-  left: 50%;
-
-  transform:
-    translateX(-50%);
-
-  white-space: nowrap;
-
-  font-size: 8px;
-
-  font-weight: 800;
-
-  letter-spacing: 1px;
-
-  color: #dfe6df;
-
-  text-shadow:
-    0 2px 5px #000;
-}
-
-
-/* HAZARDS */
-
-.hazard {
-  z-index: 3;
-}
-
-.bomb {
-  width: 28px;
-  height: 28px;
-
-  border-radius: 50%;
-
-  background:
-    radial-gradient(
-      circle at 35% 30%,
-      #fff,
-      #ff6870 12%,
-      #ff424a 50%,
-      #8d1117 100%
-    );
-
-  border:
-    2px solid #ffb1b4;
-
-  box-shadow:
-    0 0 13px #ff424a,
-    0 0 30px #ff424a66;
-
-  animation:
-    pulse 0.65s infinite alternate;
-}
-
-.pit {
-  width: 66px;
-  height: 66px;
-
-  border-radius: 50%;
-
-  background:
-    radial-gradient(
-      circle,
-      #000 42%,
-      #050706 44%,
-      #242a26 67%,
-      #080a09 70%
-    );
-
-  border: 1px solid #69736d;
-
-  box-shadow:
-    inset 0 0 18px #000,
-    0 0 18px #000;
-}
-
-.countdown {
-  position: absolute;
-
-  inset: 0;
-
-  z-index: 20;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  font-size: 110px;
-
-  font-weight: 950;
-
-  color: #fff;
-
-  text-shadow:
-    0 0 35px var(--lime);
-
-  pointer-events: none;
-}
-
-.countdown:empty {
-  display: none;
-}
-
-
-/* GAME FOOTER */
-
-.game-bottom {
-  width: min(700px, 78vw);
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-}
-
-.controls {
-  display: flex;
-
-  align-items: center;
-
-  gap: 4px;
-
-  color: #717b74;
-
-  font-size: 9px;
-
-  letter-spacing: 2px;
-}
-
-.controls kbd {
-  width: 25px;
-  height: 25px;
-
-  display: grid;
-
-  place-items: center;
-
-  border: 1px solid #303731;
-
-  border-radius: 5px;
-
-  background: #111512;
-
-  color: #d5ddd6;
-
-  font-size: 10px;
-}
-
-.controls span {
-  margin-left: 7px;
-}
-
-.game-status {
-  font-size: 10px;
-
-  letter-spacing: 3px;
-
-  color: var(--lime);
-}
-
-.danger {
-  height: 34px;
-
-  padding: 0 12px;
-
-  background: #351618;
-
-  color: #ff7b80;
-
-  font-size: 9px;
-
-  letter-spacing: 1px;
-}
-
-
-/* RESULT */
-
-.result-wrap {
-  width: min(620px, 92vw);
-}
-
-.result-kicker {
-  font-size: 9px;
-
-  letter-spacing: 4px;
-
-  color: #7e8881;
-}
-
-.result-wrap h2 {
-  font-size: clamp(54px, 10vw, 100px);
-
-  margin: 7px 0 24px;
-
-  color: var(--lime);
-
-  letter-spacing: -4px;
-}
-
-.scores {
-  display: grid;
-
-  gap: 5px;
-
-  text-align: left;
-
-  margin-bottom: 20px;
-}
-
-.score {
-  display: flex;
-
-  justify-content: space-between;
-
-  padding: 12px 15px;
-
-  background: #121714;
-
-  border: 1px solid #282e2a;
-
-  border-radius: 8px;
-
-  font-size: 12px;
-}
-
-.score b {
-  font-size: 9px;
-
-  letter-spacing: 1px;
-}
-
-.score.alive b {
-  color: var(--lime);
-}
-
-.score.out {
-  opacity: 0.45;
-}
-
-.result-actions {
-  width: min(400px, 100%);
-
-  margin: auto;
-}
-
-.toast {
-  position: fixed;
-
-  top: 84px;
-
-  left: 50%;
-
-  transform:
-    translateX(-50%);
-
-  z-index: 999;
-
-  background: #151a17;
-
-  color: #fff;
-
-  border:
-    1px solid var(--lime);
-
-  padding: 11px 18px;
-
-  border-radius: 9px;
-
-  font-size: 11px;
-
-  font-weight: 800;
-
-  box-shadow:
-    0 10px 35px #000;
-}
-
-
-/* ANIMATIONS */
-
-@keyframes pulse {
-  from {
-    transform: scale(0.9);
-    opacity: 0.72;
-  }
-
-  to {
-    transform: scale(1.08);
-    opacity: 1;
-  }
-}
-
-
-/* MOBILE */
-
-@media (max-width: 600px) {
-
-  .topbar {
-    padding: 0 16px;
-    height: 62px;
-  }
-
-  .screen {
-    min-height:
-      calc(100vh - 62px);
-  }
-
-  .home-wrap h1 {
-    letter-spacing: -6px;
-  }
-
-  .rules {
-    gap: 12px;
-  }
-
-  .room-title h2 {
-    font-size: 42px;
-  }
-
-  .room-title {
-    align-items: center;
-  }
-
-  .copy {
-    height: 34px;
-  }
-
-  #game {
-    padding: 62px 10px 20px;
-  }
-
-  #arena {
-    width: 92vw;
-    height: 92vw;
-
-    min-height: 0;
-    max-height: none;
-  }
-
-  .game-bottom {
-    width: 92vw;
-  }
-
-  .controls {
-    display: none;
-  }
-
-  .countdown {
-    font-size: 80px;
-  }
-}
+</body>
+</html>
