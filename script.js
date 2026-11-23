@@ -1,3 +1,6 @@
+import * as THREE from "three";
+import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/loaders/GLTFLoader.js";
+
 const $ = id => document.getElementById(id);
 
 /* =========================================================
