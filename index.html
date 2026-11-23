@@ -2,546 +2,489 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>LAST//ALIVE</title>
 
 <style>
 *{
-    box-sizing:border-box;
-    -webkit-tap-highlight-color:transparent;
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
 }
 
 html,body{
-    margin:0;
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    background:#050809;
-    font-family:Arial,Helvetica,sans-serif;
-    color:white;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#050809;
+  font-family:Arial,Helvetica,sans-serif;
 }
 
 body{
-    touch-action:none;
+  touch-action:none;
+  color:#fff;
 }
 
-canvas{
-    display:block;
-    width:100%;
-    height:100%;
-}
-
-button,input{
-    font:inherit;
+#game{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  background:#101719;
 }
 
 #start{
-    position:fixed;
-    inset:0;
-    z-index:50;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:
-        radial-gradient(circle at 50% 40%,#123a35 0%,#07100f 35%,#030506 75%);
+  position:fixed;
+  inset:0;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(circle at 50% 40%,#123b35 0,#06100f 35%,#030506 75%);
 }
 
 .card{
-    width:min(510px,90vw);
-    padding:42px;
-    border:1px solid rgba(99,231,198,.22);
-    background:rgba(4,10,10,.88);
-    box-shadow:0 30px 100px rgba(0,0,0,.6);
+  width:min(520px,90vw);
+  padding:42px;
+  border:1px solid #1d3733;
+  background:rgba(4,10,10,.92);
+  box-shadow:0 30px 100px #000;
 }
 
 .kicker{
-    color:#5de5c2;
-    font-size:11px;
-    font-weight:800;
-    letter-spacing:5px;
-    margin-bottom:15px;
+  color:#55e2be;
+  font-size:12px;
+  letter-spacing:5px;
+  font-weight:bold;
+  margin-bottom:15px;
 }
 
 .logo{
-    font-size:clamp(48px,8vw,82px);
-    line-height:.9;
-    font-weight:900;
-    letter-spacing:-5px;
+  font-size:clamp(42px,8vw,76px);
+  font-weight:900;
+  letter-spacing:-5px;
+  line-height:.9;
 }
 
-.logo span{
-    color:#5de5c2;
+.logo i{
+  color:#51e1bb;
+  font-style:normal;
 }
 
 .desc{
-    margin:24px 0;
-    color:#91a3a0;
-    line-height:1.7;
-    font-size:14px;
+  color:#83918f;
+  margin:25px 0;
+  line-height:1.6;
+  font-size:14px;
 }
 
 #name{
-    width:100%;
-    height:58px;
-    border:1px solid #253633;
-    background:#07100f;
-    color:white;
-    padding:0 18px;
-    outline:none;
-    font-weight:700;
-    font-size:16px;
+  width:100%;
+  height:58px;
+  padding:0 18px;
+  background:#08100f;
+  border:1px solid #28403b;
+  color:#fff;
+  outline:none;
+  font-size:16px;
 }
 
 #name:focus{
-    border-color:#5de5c2;
+  border-color:#51e1bb;
 }
 
 #enter{
-    margin-top:12px;
-    width:100%;
-    height:58px;
-    border:0;
-    background:#5de5c2;
-    color:#03100d;
-    font-weight:900;
-    letter-spacing:1px;
-    cursor:pointer;
+  width:100%;
+  height:58px;
+  margin-top:10px;
+  border:0;
+  background:#51e1bb;
+  color:#03100c;
+  font-weight:900;
+  font-size:15px;
+  cursor:pointer;
 }
 
-#enter:hover{
-    background:#83f2d8;
+#enter:active{
+  transform:scale(.98);
 }
 
 .controls{
-    margin-top:22px;
-    color:#647774;
-    font-size:11px;
-    line-height:2;
-    letter-spacing:1px;
+  margin-top:24px;
+  color:#60716e;
+  font-size:11px;
+  line-height:2;
+  letter-spacing:1px;
 }
 
 #hud{
-    display:none;
-    position:fixed;
-    inset:0;
-    z-index:10;
-    pointer-events:none;
+  position:fixed;
+  inset:0;
+  z-index:5;
+  pointer-events:none;
+  display:none;
 }
 
-.top{
-    position:absolute;
-    top:20px;
-    left:20px;
-    right:20px;
-    display:flex;
-    justify-content:space-between;
-    gap:12px;
+.stat{
+  position:absolute;
+  top:18px;
+  min-width:90px;
+  padding:12px 15px;
+  border:1px solid rgba(255,255,255,.1);
+  background:rgba(2,7,7,.7);
+  backdrop-filter:blur(8px);
 }
 
-.box{
-    min-width:90px;
-    padding:12px 15px;
-    border:1px solid rgba(255,255,255,.1);
-    background:rgba(3,7,7,.65);
-    backdrop-filter:blur(8px);
+.stat small{
+  display:block;
+  color:#71807d;
+  font-size:9px;
+  letter-spacing:2px;
+  margin-bottom:4px;
 }
 
-.label{
-    font-size:9px;
-    color:#70827e;
-    letter-spacing:2px;
+.stat strong{
+  font-size:20px;
 }
 
-.value{
-    margin-top:4px;
-    font-size:21px;
-    font-weight:900;
-}
+#aliveBox{left:18px}
+#zoneBox{left:125px}
+#killBox{right:125px}
+#weaponBox{right:18px}
 
 .bottom{
-    position:absolute;
-    left:20px;
-    bottom:20px;
-    display:flex;
-    gap:8px;
+  position:absolute;
+  left:18px;
+  bottom:18px;
+  display:flex;
+  gap:10px;
 }
 
 .bar{
-    width:180px;
-    height:8px;
-    background:#1b2624;
-    margin-top:7px;
-    overflow:hidden;
+  min-width:100px;
+  padding:10px 13px;
+  border:1px solid rgba(255,255,255,.1);
+  background:rgba(2,7,7,.75);
 }
 
-.bar i{
-    display:block;
-    width:100%;
-    height:100%;
-    background:#5de5c2;
+.bar small{
+  display:block;
+  color:#71807d;
+  font-size:9px;
+  letter-spacing:2px;
+}
+
+.bar strong{
+  font-size:20px;
 }
 
 #crosshair{
-    position:absolute;
-    left:50%;
-    top:50%;
-    transform:translate(-50%,-50%);
-    width:22px;
-    height:22px;
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:24px;
+  height:24px;
+  transform:translate(-50%,-50%);
 }
 
 #crosshair:before,
 #crosshair:after{
-    content:"";
-    position:absolute;
-    background:white;
-    opacity:.9;
+  content:"";
+  position:absolute;
+  background:#fff;
+  opacity:.85;
 }
 
 #crosshair:before{
-    width:22px;
-    height:1px;
-    left:0;
-    top:10px;
+  width:24px;
+  height:2px;
+  left:0;
+  top:11px;
 }
 
 #crosshair:after{
-    height:22px;
-    width:1px;
-    left:10px;
-    top:0;
+  width:2px;
+  height:24px;
+  left:11px;
+  top:0;
 }
 
 #help{
-    position:absolute;
-    right:20px;
-    bottom:20px;
-    color:#9aa8a5;
-    text-align:right;
-    font-size:11px;
-    line-height:1.8;
-}
-
-#zoneWarning{
-    position:absolute;
-    top:100px;
-    left:50%;
-    transform:translateX(-50%);
-    color:#ffce62;
-    font-size:12px;
-    font-weight:900;
-    letter-spacing:2px;
-    opacity:0;
-}
-
-#mobile{
-    display:none;
-    position:absolute;
-    inset:0;
-    pointer-events:none;
-}
-
-#joystick{
-    position:absolute;
-    left:24px;
-    bottom:28px;
-    width:130px;
-    height:130px;
-    border-radius:50%;
-    border:2px solid rgba(255,255,255,.16);
-    background:rgba(0,0,0,.25);
-    pointer-events:auto;
-}
-
-#stick{
-    position:absolute;
-    width:58px;
-    height:58px;
-    border-radius:50%;
-    left:34px;
-    top:34px;
-    background:rgba(93,229,194,.6);
-    border:1px solid rgba(255,255,255,.4);
-}
-
-.mbtn{
-    position:absolute;
-    border:1px solid rgba(255,255,255,.22);
-    color:white;
-    background:rgba(0,0,0,.55);
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:11px;
-    font-weight:900;
-    pointer-events:auto;
-    user-select:none;
-}
-
-#fireBtn{
-    right:25px;
-    bottom:35px;
-    width:90px;
-    height:90px;
-    background:rgba(255,72,72,.55);
-}
-
-#sprintBtn{
-    right:130px;
-    bottom:50px;
-    width:64px;
-    height:64px;
-}
-
-#jumpBtn{
-    right:115px;
-    bottom:130px;
-    width:60px;
-    height:60px;
-}
-
-#reloadBtn{
-    right:30px;
-    bottom:145px;
-    width:58px;
-    height:58px;
-}
-
-#aimZone{
-    position:absolute;
-    right:0;
-    top:0;
-    width:58%;
-    height:70%;
-    pointer-events:auto;
+  position:absolute;
+  right:18px;
+  bottom:18px;
+  text-align:right;
+  color:#77827f;
+  font-size:10px;
+  line-height:1.8;
 }
 
 #result{
-    display:none;
-    position:fixed;
-    inset:0;
-    z-index:80;
-    align-items:center;
-    justify-content:center;
-    background:rgba(0,0,0,.78);
+  position:fixed;
+  inset:0;
+  z-index:30;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.78);
 }
 
 .resultCard{
-    width:min(440px,88vw);
-    padding:42px;
-    text-align:center;
-    border:1px solid rgba(93,229,194,.25);
-    background:#07100f;
+  text-align:center;
+  padding:45px;
+  background:#050b0a;
+  border:1px solid #24403a;
 }
 
 #resultTitle{
-    font-size:52px;
-    font-weight:900;
+  font-size:52px;
+  font-weight:900;
+}
+
+#resultText{
+  color:#82908c;
+  margin:15px 0 25px;
 }
 
 #again{
-    margin-top:20px;
-    width:100%;
-    height:54px;
-    border:0;
-    background:#5de5c2;
-    font-weight:900;
+  border:0;
+  padding:15px 30px;
+  background:#51e1bb;
+  color:#03100c;
+  font-weight:900;
+}
+
+/* MOBILE */
+#mobile{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:10;
+  pointer-events:none;
+}
+
+#stick{
+  position:absolute;
+  left:24px;
+  bottom:25px;
+  width:130px;
+  height:130px;
+  border-radius:50%;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);
+  pointer-events:auto;
+}
+
+#stickKnob{
+  position:absolute;
+  width:55px;
+  height:55px;
+  left:37px;
+  top:37px;
+  border-radius:50%;
+  background:rgba(81,225,187,.55);
+}
+
+.mobileBtn{
+  position:absolute;
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(10,18,18,.75);
+  color:white;
+  font-weight:bold;
+  pointer-events:auto;
+  user-select:none;
+}
+
+#fire{
+  right:25px;
+  bottom:35px;
+  width:90px;
+  height:90px;
+  background:rgba(225,75,75,.55);
+}
+
+#jump{
+  right:135px;
+  bottom:35px;
+}
+
+#sprint{
+  right:135px;
+  bottom:120px;
+}
+
+#aim{
+  right:25px;
+  bottom:145px;
 }
 
 @media(max-width:800px){
-    .top{
-        top:10px;
-        left:10px;
-        right:10px;
-    }
+  #mobile{
+    display:block;
+  }
 
-    .box{
-        min-width:auto;
-        padding:8px 10px;
-    }
+  #help{
+    display:none;
+  }
 
-    .value{
-        font-size:16px;
-    }
+  #crosshair{
+    opacity:.6;
+  }
 
-    .bottom{
-        left:10px;
-        bottom:10px;
-    }
+  .stat{
+    transform:scale(.8);
+    transform-origin:top left;
+  }
 
-    .bar{
-        width:110px;
-    }
+  #weaponBox{
+    transform:scale(.8);
+    transform-origin:top right;
+  }
 
-    #help{
-        display:none;
-    }
+  .bottom{
+    transform:scale(.8);
+    transform-origin:bottom left;
+  }
 
-    #mobile{
-        display:block;
-    }
+  .card{
+    padding:28px;
+  }
 
-    .card{
-        padding:28px;
-    }
-
-    .logo{
-        font-size:48px;
-    }
+  #resultTitle{
+    font-size:38px;
+  }
 }
 </style>
 </head>
 
 <body>
 
+<canvas id="game"></canvas>
+
 <div id="start">
-    <div class="card">
-        <div class="kicker">DISTRICT 09 // BATTLE ROYALE</div>
+  <div class="card">
 
-        <div class="logo">
-            LAST<span>//</span>ALIVE
-        </div>
+    <div class="kicker">DISTRICT 10 // BATTLE ROYALE</div>
 
-        <div class="desc">
-            DROP INTO THE CITY.<br>
-            MOVE FAST. AIM CLEAN. BE THE LAST ALIVE.
-        </div>
-
-        <input
-            id="name"
-            maxlength="16"
-            autocomplete="off"
-            placeholder="ENTER PLAYER NAME"
-        >
-
-        <button id="enter" type="button">
-            DROP INTO DISTRICT →
-        </button>
-
-        <div class="controls">
-            WASD / ARROWS — MOVE<br>
-            SHIFT — SPRINT<br>
-            SPACE — JUMP<br>
-            MOUSE — AIM<br>
-            LMB — FIRE<br>
-            R — RELOAD<br>
-            V — CAMERA
-        </div>
+    <div class="logo">
+      LAST<span>//</span>ALIVE
     </div>
+
+    <div class="desc">
+      Drop into the district. Find the enemy.
+      Move fast. Aim clean. Be the last alive.
+    </div>
+
+    <input
+      id="name"
+      maxlength="14"
+      placeholder="ENTER PLAYER NAME"
+      autocomplete="off"
+    >
+
+    <button id="enter">
+      DROP INTO DISTRICT →
+    </button>
+
+    <div class="controls">
+      WASD / ARROWS — MOVE<br>
+      SHIFT — SPRINT<br>
+      MOUSE — AIM<br>
+      LMB — FIRE<br>
+      SPACE — JUMP<br>
+      C — CROUCH
+    </div>
+
+  </div>
 </div>
 
 <div id="hud">
 
-    <div class="top">
+  <div class="stat" id="aliveBox">
+    <small>ALIVE</small>
+    <strong id="alive">12</strong>
+  </div>
 
-        <div class="box">
-            <div class="label">ALIVE</div>
-            <div class="value" id="alive">10</div>
-        </div>
+  <div class="stat" id="zoneBox">
+    <small>ZONE</small>
+    <strong id="zone">180m</strong>
+  </div>
 
-        <div class="box">
-            <div class="label">ZONE</div>
-            <div class="value" id="zone">170m</div>
-        </div>
+  <div class="stat" id="killBox">
+    <small>KILLS</small>
+    <strong id="kills">0</strong>
+  </div>
 
-        <div class="box">
-            <div class="label">KILLS</div>
-            <div class="value" id="kills">0</div>
-        </div>
+  <div class="stat" id="weaponBox">
+    <small>WEAPON</small>
+    <strong id="weapon">AR-01</strong>
+  </div>
 
-        <div class="box">
-            <div class="label">WEAPON</div>
-            <div class="value" id="weapon">AR-01</div>
-        </div>
+  <div class="bottom">
 
+    <div class="bar">
+      <small>HEALTH</small>
+      <strong id="health">100</strong>
     </div>
 
-    <div id="crosshair"></div>
-
-    <div id="zoneWarning">
-        OUTSIDE SAFE ZONE
+    <div class="bar">
+      <small>ARMOR</small>
+      <strong id="armor">100</strong>
     </div>
 
-    <div class="bottom">
-
-        <div class="box">
-            <div class="label">HEALTH</div>
-            <div class="value" id="health">100</div>
-            <div class="bar">
-                <i id="healthBar"></i>
-            </div>
-        </div>
-
-        <div class="box">
-            <div class="label">ARMOR</div>
-            <div class="value" id="armor">100</div>
-        </div>
-
-        <div class="box">
-            <div class="label">AMMO</div>
-            <div class="value" id="ammo">30 / 150</div>
-        </div>
-
-        <div class="box">
-            <div class="label">MEDKIT</div>
-            <div class="value" id="medkits">2</div>
-        </div>
-
+    <div class="bar">
+      <small>AMMO</small>
+      <strong id="ammo">30 / 150</strong>
     </div>
 
-    <div id="help">
-        WASD / ARROWS — MOVE<br>
-        SHIFT — SPRINT<br>
-        SPACE — JUMP<br>
-        C — CROUCH<br>
-        MOUSE — AIM<br>
-        LMB — FIRE<br>
-        R — RELOAD<br>
-        V — CAMERA<br>
-        G — MEDKIT
+    <div class="bar">
+      <small>MEDKIT</small>
+      <strong id="medkits">2</strong>
     </div>
 
-    <div id="mobile">
+  </div>
 
-        <div id="joystick">
-            <div id="stick"></div>
-        </div>
+  <div id="crosshair"></div>
 
-        <div id="aimZone"></div>
+  <div id="help">
+    WASD / ARROWS — MOVE<br>
+    SHIFT — SPRINT<br>
+    SPACE — JUMP<br>
+    C — CROUCH<br>
+    MOUSE — AIM<br>
+    LMB — FIRE<br>
+    R — RELOAD<br>
+    1 / 2 / 3 — WEAPON
+  </div>
 
-        <div class="mbtn" id="fireBtn">
-            FIRE
-        </div>
+</div>
 
-        <div class="mbtn" id="sprintBtn">
-            RUN
-        </div>
+<div id="mobile">
 
-        <div class="mbtn" id="jumpBtn">
-            JUMP
-        </div>
+  <div id="stick">
+    <div id="stickKnob"></div>
+  </div>
 
-        <div class="mbtn" id="reloadBtn">
-            R
-        </div>
-
-    </div>
+  <button class="mobileBtn" id="fire">FIRE</button>
+  <button class="mobileBtn" id="jump">JUMP</button>
+  <button class="mobileBtn" id="sprint">RUN</button>
+  <button class="mobileBtn" id="aim">AIM</button>
 
 </div>
 
 <div id="result">
-    <div class="resultCard">
-        <div id="resultTitle">BOOYAH!</div>
-        <div id="resultText"></div>
-        <button id="again">PLAY AGAIN</button>
-    </div>
+  <div class="resultCard">
+    <div id="resultTitle">BOOYAH!</div>
+    <div id="resultText"></div>
+    <button id="again">PLAY AGAIN</button>
+  </div>
 </div>
-
-<!-- ONLY ONE THREE.JS -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.min.js"></script>
 
 <script src="./script.js"></script>
 
