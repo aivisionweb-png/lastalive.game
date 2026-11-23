@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LAST//ALIVE</title><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><div class="brand">LAST<span>//</span>ALIVE</div><div class="status">● ONLINE</div></header>
+<main>
+<section id="home" class="screen active"><div class="hero">
+<div class="eyebrow">MULTIPLAYER SURVIVAL</div><h1>LAST<br><span>ALIVE.</span></h1>
+<p>Move. Dodge. Survive. Be the last player standing.</p>
+<div class="panel">
+<input id="nameInput" maxlength="14" placeholder="YOUR NAME">
+<button id="createBtn" class="primary">CREATE ROOM</button>
+<div class="or">OR JOIN A ROOM</div>
+<div class="joinrow"><input id="roomInput" maxlength="6" placeholder="ROOM CODE"><button id="joinBtn">JOIN</button></div>
+<div id="homeError" class="error"></div>
+</div></div></section>
+
+<section id="lobby" class="screen"><div class="lobbyWrap">
+<div class="eyebrow">WAITING ROOM</div><h2>ROOM <span id="roomCode">------</span></h2>
+<button id="copyBtn" class="small">COPY CODE</button>
+<div class="panel lobbyPanel"><div class="label">PLAYERS <span id="count">0/8</span></div>
+<div id="playerList" class="players"></div>
+<button id="startBtn" class="primary" disabled>START GAME</button>
+<button id="leaveBtn" class="ghost">LEAVE ROOM</button><div id="lobbyError" class="error"></div></div>
+</div></section>
+
+<section id="game" class="screen">
+<div class="gameHud"><div>ROUND <b id="round">1</b></div><div>TIME <b id="time">60</b></div><div>ALIVE <b id="alive">0</b></div></div>
+<div id="arena"><div class="grid"></div><div id="entities"></div></div>
+<div class="controls">W A S D / ARROW KEYS TO MOVE</div><button id="gameLeave" class="danger">LEAVE</button>
+</section>
+
+<section id="result" class="screen"><div class="resultBox">
+<div class="eyebrow">ROUND OVER</div><h2 id="winner">WINNER</h2><div id="scores" class="scores"></div>
+<button id="rematchBtn" class="primary">REMATCH</button><button id="menuBtn" class="ghost">MAIN MENU</button>
+</div></section>
+</main>
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+<script src="script.js"></script>
+</body></html>
