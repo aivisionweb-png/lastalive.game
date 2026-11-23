@@ -3,401 +3,384 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <title>LAST//ALIVE</title>
 
 <style>
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
-html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#07100e;
-  font-family:Arial,Helvetica,sans-serif;
-  touch-action:none;
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #07100f;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
-body{
-  position:relative;
+canvas {
+    position: fixed;
+    inset: 0;
+    display: block;
+    z-index: 1;
 }
 
-canvas{
-  position:fixed;
-  inset:0;
-  width:100%;
-  height:100%;
-  display:block;
+#start {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(circle at 50% 40%, #123a35 0%, #07100f 42%, #030606 100%);
 }
 
-/* ================= START ================= */
-
-#start{
-  position:fixed;
-  inset:0;
-  z-index:50;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:
-    radial-gradient(circle at 50% 45%,#12372f 0%,#07100e 45%,#020504 100%);
+.start-card {
+    width: min(460px, calc(100vw - 32px));
+    padding: 38px;
+    border: 1px solid rgba(83, 225, 192, .25);
+    background: rgba(3, 10, 9, .88);
+    box-shadow: 0 30px 100px rgba(0,0,0,.55);
 }
 
-.startCard{
-  width:min(520px,90vw);
-  padding:42px;
-  border:1px solid rgba(90,230,190,.25);
-  background:rgba(4,12,10,.88);
-  box-shadow:
-    0 0 80px rgba(50,220,170,.08),
-    inset 0 0 40px rgba(50,220,170,.025);
+.kicker {
+    color: #55e4c0;
+    font-size: 11px;
+    letter-spacing: 4px;
+    font-weight: 800;
+    margin-bottom: 18px;
 }
 
-.kicker{
-  color:#55e2bf;
-  font-size:12px;
-  font-weight:800;
-  letter-spacing:5px;
-  margin-bottom:14px;
+.logo {
+    color: white;
+    font-size: clamp(42px, 9vw, 72px);
+    line-height: .9;
+    font-weight: 900;
+    letter-spacing: -5px;
 }
 
-.logo{
-  color:#fff;
-  font-size:clamp(44px,9vw,82px);
-  line-height:.9;
-  font-weight:1000;
-  letter-spacing:-5px;
+.logo span {
+    color: #55e4c0;
 }
 
-.logo span{
-  color:#51e4bd;
+.subtitle {
+    color: #78918d;
+    margin-top: 20px;
+    line-height: 1.7;
+    font-size: 13px;
 }
 
-.desc{
-  margin-top:24px;
-  color:#91aaa4;
-  font-size:14px;
-  line-height:1.7;
+#name {
+    width: 100%;
+    height: 56px;
+    margin-top: 28px;
+    padding: 0 16px;
+    border: 1px solid #263c38;
+    outline: none;
+    background: #07110f;
+    color: white;
+    font-size: 15px;
 }
 
-#name{
-  width:100%;
-  margin-top:28px;
-  height:56px;
-  padding:0 18px;
-  color:#fff;
-  background:#081512;
-  border:1px solid #25483f;
-  outline:none;
-  font-size:16px;
+#name:focus {
+    border-color: #55e4c0;
 }
 
-#name:focus{
-  border-color:#51e4bd;
+#enter {
+    width: 100%;
+    height: 56px;
+    margin-top: 10px;
+    border: 0;
+    cursor: pointer;
+    background: #55e4c0;
+    color: #03100d;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 1px;
 }
 
-#enter{
-  width:100%;
-  height:58px;
-  margin-top:12px;
-  border:0;
-  background:#51e4bd;
-  color:#03100d;
-  font-weight:1000;
-  font-size:15px;
-  letter-spacing:1px;
-  cursor:pointer;
+#enter:hover {
+    background: #79f0d0;
 }
 
-#enter:active{
-  transform:scale(.98);
+.controls {
+    margin-top: 25px;
+    color: #617b76;
+    font-size: 10px;
+    line-height: 2;
+    letter-spacing: 1px;
 }
 
-.controls{
-  margin-top:24px;
-  color:#58736c;
-  font-size:11px;
-  line-height:2;
-  letter-spacing:1px;
+#loading {
+    display: none;
+    margin-top: 15px;
+    color: #55e4c0;
+    font-size: 11px;
+    letter-spacing: 2px;
 }
 
-/* ================= HUD ================= */
+/* HUD */
 
-#hud{
-  display:none;
-  position:fixed;
-  inset:0;
-  z-index:10;
-  pointer-events:none;
-  color:#fff;
+#hud {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    display: none;
 }
 
-.topHud{
-  position:absolute;
-  top:18px;
-  left:18px;
-  right:18px;
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
+.hud-top {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    right: 18px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
 }
 
-.stat{
-  min-width:95px;
-  padding:10px 13px;
-  border:1px solid rgba(255,255,255,.1);
-  background:rgba(0,0,0,.45);
-  backdrop-filter:blur(8px);
+.hud-box {
+    min-width: 90px;
+    padding: 10px 14px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(3,8,8,.72);
+    backdrop-filter: blur(8px);
 }
 
-.stat small{
-  display:block;
-  color:#82938f;
-  font-size:9px;
-  letter-spacing:2px;
+.hud-label {
+    color: #6f8782;
+    font-size: 9px;
+    letter-spacing: 2px;
 }
 
-.stat strong{
-  display:block;
-  margin-top:3px;
-  font-size:20px;
+.hud-value {
+    margin-top: 4px;
+    color: white;
+    font-size: 21px;
+    font-weight: 900;
 }
 
-.bottomHud{
-  position:absolute;
-  left:18px;
-  bottom:18px;
-  display:flex;
-  gap:8px;
+#crosshair {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 22px;
+    height: 22px;
+    transform: translate(-50%, -50%);
 }
 
-.box{
-  padding:11px 15px;
-  min-width:90px;
-  background:rgba(0,0,0,.55);
-  border:1px solid rgba(255,255,255,.1);
+#crosshair::before,
+#crosshair::after {
+    content: "";
+    position: absolute;
+    background: rgba(255,255,255,.9);
 }
 
-.box small{
-  display:block;
-  color:#81908d;
-  font-size:9px;
-  letter-spacing:2px;
+#crosshair::before {
+    width: 22px;
+    height: 2px;
+    left: 0;
+    top: 10px;
 }
 
-.box strong{
-  display:block;
-  margin-top:4px;
-  font-size:20px;
+#crosshair::after {
+    width: 2px;
+    height: 22px;
+    left: 10px;
+    top: 0;
 }
 
-#crosshair{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  width:24px;
-  height:24px;
+.hud-bottom {
+    position: absolute;
+    left: 18px;
+    bottom: 18px;
+    display: flex;
+    gap: 8px;
 }
 
-#crosshair:before,
-#crosshair:after{
-  content:"";
-  position:absolute;
-  background:#fff;
-  opacity:.9;
+.stat {
+    min-width: 105px;
+    padding: 11px 14px;
+    background: rgba(3,8,8,.78);
+    border: 1px solid rgba(255,255,255,.1);
 }
 
-#crosshair:before{
-  width:2px;
-  height:24px;
-  left:11px;
+.stat small {
+    display: block;
+    color: #6d8781;
+    font-size: 8px;
+    letter-spacing: 2px;
 }
 
-#crosshair:after{
-  height:2px;
-  width:24px;
-  top:11px;
+.stat strong {
+    display: block;
+    color: white;
+    font-size: 20px;
+    margin-top: 3px;
 }
 
-#message{
-  position:absolute;
-  left:50%;
-  top:18%;
-  transform:translateX(-50%);
-  color:#fff;
-  font-size:13px;
-  letter-spacing:3px;
-  font-weight:bold;
-  text-align:center;
+#mobile {
+    display: none;
 }
 
-/* ================= MOBILE ================= */
-
-#mobile{
-  display:none;
-  position:fixed;
-  inset:0;
-  z-index:30;
-  pointer-events:none;
+#joystick {
+    position: fixed;
+    left: 24px;
+    bottom: 28px;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.07);
+    border: 2px solid rgba(255,255,255,.15);
+    z-index: 30;
+    touch-action: none;
 }
 
-#joystick{
-  position:absolute;
-  left:24px;
-  bottom:30px;
-  width:130px;
-  height:130px;
-  border-radius:50%;
-  border:2px solid rgba(255,255,255,.18);
-  background:rgba(0,0,0,.2);
-  pointer-events:auto;
+#stick {
+    position: absolute;
+    width: 55px;
+    height: 55px;
+    left: 37px;
+    top: 37px;
+    border-radius: 50%;
+    background: rgba(85,228,192,.75);
+    box-shadow: 0 0 25px rgba(85,228,192,.25);
 }
 
-#stick{
-  position:absolute;
-  width:58px;
-  height:58px;
-  left:34px;
-  top:34px;
-  border-radius:50%;
-  background:rgba(80,225,190,.55);
-  border:2px solid rgba(255,255,255,.3);
+.mobile-btn {
+    position: fixed;
+    z-index: 30;
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.2);
+    background: rgba(5,12,11,.72);
+    color: white;
+    font-size: 11px;
+    font-weight: 900;
+    touch-action: none;
 }
 
-.mobileBtn{
-  position:absolute;
-  width:68px;
-  height:68px;
-  border-radius:50%;
-  border:1px solid rgba(255,255,255,.25);
-  background:rgba(0,0,0,.48);
-  color:#fff;
-  font-weight:900;
-  pointer-events:auto;
+#fireBtn {
+    right: 25px;
+    bottom: 45px;
+    width: 82px;
+    height: 82px;
+    background: rgba(214,55,55,.72);
 }
 
-#fire{
-  right:28px;
-  bottom:38px;
-  width:88px;
-  height:88px;
-  background:rgba(210,55,55,.48);
+#jumpBtn {
+    right: 125px;
+    bottom: 48px;
 }
 
-#sprint{
-  right:126px;
-  bottom:44px;
+#sprintBtn {
+    right: 130px;
+    bottom: 130px;
 }
 
-#jump{
-  right:38px;
-  bottom:145px;
+#aimZone {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 52%;
+    height: 70%;
+    z-index: 25;
+    display: none;
+    touch-action: none;
 }
 
-#reload{
-  right:125px;
-  bottom:140px;
+#result {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.72);
 }
 
-#switch{
-  right:30px;
-  top:110px;
+.result-card {
+    text-align: center;
+    padding: 45px;
+    background: #07100f;
+    border: 1px solid rgba(85,228,192,.25);
 }
 
-#mobileAim{
-  position:absolute;
-  right:0;
-  top:0;
-  width:55%;
-  height:70%;
-  pointer-events:auto;
+#resultTitle {
+    color: white;
+    font-size: 52px;
+    font-weight: 900;
 }
 
-/* ================= RESULT ================= */
-
-#result{
-  display:none;
-  position:fixed;
-  inset:0;
-  z-index:100;
-  align-items:center;
-  justify-content:center;
-  background:rgba(0,0,0,.72);
+#resultText {
+    color: #77908b;
+    margin-top: 10px;
 }
 
-.resultCard{
-  width:min(480px,90vw);
-  padding:45px;
-  text-align:center;
-  background:#07110f;
-  border:1px solid #31564c;
+#again {
+    margin-top: 25px;
+    width: 180px;
+    height: 48px;
+    border: 0;
+    background: #55e4c0;
+    font-weight: 900;
+    cursor: pointer;
 }
 
-#resultTitle{
-  color:#fff;
-  font-size:48px;
-  margin:0;
-}
+@media (max-width: 700px) {
+    .hud-top {
+        top: 8px;
+        left: 8px;
+        right: 8px;
+    }
 
-#resultText{
-  color:#8fa9a2;
-  margin:14px 0 25px;
-}
+    .hud-box {
+        min-width: 62px;
+        padding: 7px 8px;
+    }
 
-#again{
-  width:100%;
-  height:52px;
-  border:0;
-  background:#51e4bd;
-  font-weight:900;
-  cursor:pointer;
-}
+    .hud-value {
+        font-size: 15px;
+    }
 
-/* PHONE */
+    .hud-bottom {
+        left: 8px;
+        bottom: 8px;
+    }
 
-@media(max-width:800px){
-  .startCard{
-    padding:28px;
-  }
+    .stat {
+        min-width: 68px;
+        padding: 7px;
+    }
 
-  .logo{
-    font-size:52px;
-  }
+    .stat strong {
+        font-size: 15px;
+    }
 
-  .topHud{
-    top:8px;
-    left:8px;
-    right:8px;
-  }
+    #mobile {
+        display: block;
+    }
 
-  .stat{
-    min-width:65px;
-    padding:7px;
-  }
+    #aimZone {
+        display: block;
+    }
 
-  .stat strong{
-    font-size:15px;
-  }
+    #crosshair {
+        top: 48%;
+    }
 
-  .bottomHud{
-    left:8px;
-    bottom:8px;
-  }
-
-  .box{
-    min-width:70px;
-    padding:7px;
-  }
-
-  .box strong{
-    font-size:15px;
-  }
+    .controls {
+        font-size: 9px;
+    }
 }
 </style>
 </head>
@@ -405,150 +388,134 @@ canvas{
 <body>
 
 <div id="start">
-  <div class="startCard">
+    <div class="start-card">
 
-    <div class="kicker">
-      DISTRICT 10 // SURVIVAL
+        <div class="kicker">DISTRICT 09 // BATTLE ROYALE</div>
+
+        <div class="logo">
+            LAST<span>//</span>ALIVE
+        </div>
+
+        <div class="subtitle">
+            Drop into the combat zone.<br>
+            Move fast. Aim clean. Survive.
+        </div>
+
+        <input
+            id="name"
+            maxlength="16"
+            autocomplete="off"
+            placeholder="ENTER PLAYER NAME"
+        >
+
+        <button id="enter">
+            DROP INTO DISTRICT →
+        </button>
+
+        <div id="loading">
+            INITIALIZING 3D ENGINE...
+        </div>
+
+        <div class="controls">
+            WASD / ARROWS — MOVE<br>
+            SHIFT — SPRINT<br>
+            SPACE — JUMP<br>
+            MOUSE — AIM<br>
+            LEFT CLICK — FIRE<br>
+            R — RELOAD
+        </div>
+
     </div>
-
-    <div class="logo">
-      LAST<span>//</span>ALIVE
-    </div>
-
-    <div class="desc">
-      DROP INTO THE DISTRICT.<br>
-      MOVE FAST. AIM CLEAN. SURVIVE.
-    </div>
-
-    <input
-      id="name"
-      maxlength="14"
-      placeholder="ENTER PLAYER NAME"
-      autocomplete="off"
-    >
-
-    <button id="enter">
-      DROP INTO DISTRICT →
-    </button>
-
-    <div class="controls">
-      WASD / ARROWS — MOVE<br>
-      SHIFT — SPRINT<br>
-      MOUSE — AIM<br>
-      LEFT CLICK — FIRE<br>
-      SPACE — JUMP<br>
-      R — RELOAD
-    </div>
-
-  </div>
 </div>
 
 <div id="hud">
 
-  <div class="topHud">
+    <div class="hud-top">
 
-    <div class="stat">
-      <small>ALIVE</small>
-      <strong id="alive">12</strong>
+        <div class="hud-box">
+            <div class="hud-label">ALIVE</div>
+            <div class="hud-value" id="alive">12</div>
+        </div>
+
+        <div class="hud-box">
+            <div class="hud-label">ZONE</div>
+            <div class="hud-value" id="zone">180m</div>
+        </div>
+
+        <div class="hud-box">
+            <div class="hud-label">KILLS</div>
+            <div class="hud-value" id="kills">0</div>
+        </div>
+
+        <div class="hud-box">
+            <div class="hud-label">WEAPON</div>
+            <div class="hud-value" id="weapon">AR-01</div>
+        </div>
+
     </div>
 
-    <div class="stat">
-      <small>ZONE</small>
-      <strong id="zone">100%</strong>
+    <div id="crosshair"></div>
+
+    <div class="hud-bottom">
+
+        <div class="stat">
+            <small>HP</small>
+            <strong id="health">100</strong>
+        </div>
+
+        <div class="stat">
+            <small>ARMOR</small>
+            <strong id="armor">100</strong>
+        </div>
+
+        <div class="stat">
+            <small>AMMO</small>
+            <strong id="ammo">30 / 150</strong>
+        </div>
+
+        <div class="stat">
+            <small>MEDKIT</small>
+            <strong id="medkits">2</strong>
+        </div>
+
     </div>
-
-    <div class="stat">
-      <small>KILLS</small>
-      <strong id="kills">0</strong>
-    </div>
-
-    <div class="stat">
-      <small>WEAPON</small>
-      <strong id="weapon">AR</strong>
-    </div>
-
-  </div>
-
-  <div id="crosshair"></div>
-
-  <div id="message"></div>
-
-  <div class="bottomHud">
-
-    <div class="box">
-      <small>HP</small>
-      <strong id="health">100</strong>
-    </div>
-
-    <div class="box">
-      <small>ARMOR</small>
-      <strong id="armor">100</strong>
-    </div>
-
-    <div class="box">
-      <small>AMMO</small>
-      <strong id="ammo">30 / 150</strong>
-    </div>
-
-    <div class="box">
-      <small>MED</small>
-      <strong id="medkits">2</strong>
-    </div>
-
-  </div>
 
 </div>
 
 <div id="mobile">
 
-  <div id="joystick">
-    <div id="stick"></div>
-  </div>
+    <div id="joystick">
+        <div id="stick"></div>
+    </div>
 
-  <div id="mobileAim"></div>
+    <button class="mobile-btn" id="fireBtn">
+        FIRE
+    </button>
 
-  <button class="mobileBtn" id="fire">
-    FIRE
-  </button>
+    <button class="mobile-btn" id="jumpBtn">
+        JUMP
+    </button>
 
-  <button class="mobileBtn" id="sprint">
-    RUN
-  </button>
+    <button class="mobile-btn" id="sprintBtn">
+        RUN
+    </button>
 
-  <button class="mobileBtn" id="jump">
-    JUMP
-  </button>
-
-  <button class="mobileBtn" id="reload">
-    R
-  </button>
-
-  <button class="mobileBtn" id="switch">
-    GUN
-  </button>
+    <div id="aimZone"></div>
 
 </div>
 
 <div id="result">
-
-  <div class="resultCard">
-
-    <h1 id="resultTitle">
-      ELIMINATED
-    </h1>
-
-    <div id="resultText">
-      0 KILLS
+    <div class="result-card">
+        <div id="resultTitle">ELIMINATED</div>
+        <div id="resultText">0 ELIMINATIONS</div>
+        <button id="again">PLAY AGAIN</button>
     </div>
-
-    <button id="again">
-      PLAY AGAIN
-    </button>
-
-  </div>
-
 </div>
 
+<!-- ONLY ONE THREE.JS SCRIPT -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.min.js"></script>
+
+<!-- YOUR GAME -->
 <script src="./script.js"></script>
 
 </body>
