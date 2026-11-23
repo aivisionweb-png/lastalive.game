@@ -7,313 +7,352 @@
 
 <style>
 *{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-    -webkit-tap-highlight-color:transparent;
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
 }
 
 html,body{
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    background:#020706;
-    font-family:Arial,Helvetica,sans-serif;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#05090a;
+  font-family:Arial,Helvetica,sans-serif;
 }
 
 body{
-    color:white;
+  color:white;
+}
+
+canvas{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  touch-action:none;
 }
 
 #start{
-    position:fixed;
-    inset:0;
-    z-index:1000;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:
-        radial-gradient(circle at 50% 40%,#08322b 0%,#03100e 38%,#020403 78%);
+  position:fixed;
+  inset:0;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(circle at 50% 40%,#0d2523 0%,#05090a 48%,#020405 100%);
 }
 
 .card{
-    width:min(520px,90vw);
-    padding:42px;
-    border:1px solid #1d5148;
-    background:rgba(2,10,9,.92);
-    box-shadow:0 30px 100px rgba(0,0,0,.7);
+  width:min(500px,90vw);
+  padding:42px;
+  border:1px solid #1d3c39;
+  background:rgba(3,9,9,.92);
+  box-shadow:0 30px 100px #000;
 }
 
 .kicker{
-    color:#54e4c4;
-    font-size:12px;
-    letter-spacing:5px;
-    font-weight:bold;
-    margin-bottom:14px;
+  color:#53e4c0;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:5px;
+  margin-bottom:18px;
 }
 
 .logo{
-    font-size:clamp(44px,9vw,78px);
-    font-weight:900;
-    letter-spacing:-5px;
-    line-height:.9;
+  font-size:clamp(42px,9vw,78px);
+  line-height:.9;
+  font-weight:950;
+  letter-spacing:-5px;
 }
 
 .logo span{
-    color:#42e0bd;
+  color:#55e7c2;
 }
 
 .desc{
-    margin-top:25px;
-    color:#829892;
-    line-height:1.7;
-    font-size:14px;
+  margin-top:25px;
+  color:#78918e;
+  line-height:1.7;
+  font-size:14px;
 }
 
 #name{
-    width:100%;
-    margin-top:28px;
-    height:58px;
-    padding:0 18px;
-    background:#06100e;
-    border:1px solid #254a43;
-    color:white;
-    outline:none;
-    font-size:16px;
+  width:100%;
+  height:58px;
+  margin-top:28px;
+  padding:0 18px;
+  background:#07100f;
+  border:1px solid #1b3835;
+  outline:none;
+  color:#fff;
+  font-size:16px;
 }
 
 #name:focus{
-    border-color:#4ee3c2;
+  border-color:#55e7c2;
 }
 
 #enter{
-    width:100%;
-    height:58px;
-    margin-top:12px;
-    border:0;
-    background:#50dfbf;
-    color:#00110c;
-    font-weight:900;
-    font-size:15px;
-    letter-spacing:1px;
-    cursor:pointer;
-    touch-action:manipulation;
+  width:100%;
+  height:58px;
+  margin-top:12px;
+  border:0;
+  background:#55e7c2;
+  color:#03100d;
+  font-size:15px;
+  font-weight:900;
+  letter-spacing:1px;
+  cursor:pointer;
 }
 
 #enter:active{
-    transform:scale(.98);
+  transform:scale(.98);
 }
 
 .controls{
-    margin-top:25px;
-    color:#60756f;
-    font-size:11px;
-    line-height:2;
-    letter-spacing:1px;
-}
-
-#loading{
-    display:none;
-    margin-top:15px;
-    text-align:center;
-    color:#50dfbf;
-    font-size:11px;
-    letter-spacing:2px;
+  margin-top:24px;
+  color:#55716d;
+  font-size:11px;
+  line-height:2;
+  letter-spacing:1px;
 }
 
 #hud{
-    display:none;
-    position:fixed;
-    inset:0;
-    z-index:20;
-    pointer-events:none;
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:10;
+  pointer-events:none;
 }
 
-.hudbox{
-    position:absolute;
-    top:18px;
-    background:rgba(3,9,8,.78);
-    border:1px solid rgba(90,220,190,.25);
-    padding:10px 14px;
-    min-width:90px;
-}
-
-.hudbox small{
-    display:block;
-    color:#78918a;
-    font-size:9px;
-    letter-spacing:2px;
-}
-
-.hudbox strong{
-    display:block;
-    margin-top:4px;
-    font-size:20px;
-}
-
-#aliveBox{left:18px}
-#zoneBox{left:130px}
-#killsBox{right:130px}
-#weaponBox{right:18px}
-
-#bottomHUD{
-    position:absolute;
-    left:18px;
-    bottom:18px;
-    display:flex;
-    gap:8px;
+.top{
+  position:absolute;
+  top:18px;
+  left:18px;
+  right:18px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
 }
 
 .stat{
-    background:rgba(3,9,8,.82);
-    border:1px solid rgba(90,220,190,.2);
-    padding:10px 14px;
-    min-width:90px;
+  min-width:100px;
+  padding:12px 16px;
+  background:rgba(3,9,10,.78);
+  border:1px solid rgba(120,220,200,.16);
+  backdrop-filter:blur(8px);
 }
 
 .stat small{
-    display:block;
-    color:#78918a;
-    font-size:9px;
-    letter-spacing:2px;
+  display:block;
+  color:#607975;
+  font-size:9px;
+  letter-spacing:2px;
 }
 
 .stat b{
-    font-size:19px;
+  display:block;
+  margin-top:3px;
+  font-size:20px;
+}
+
+.bottom{
+  position:absolute;
+  left:18px;
+  bottom:18px;
+  display:flex;
+  gap:10px;
+}
+
+.bar{
+  padding:12px 16px;
+  background:rgba(3,9,10,.82);
+  border:1px solid rgba(120,220,200,.16);
+}
+
+.bar small{
+  display:block;
+  color:#607975;
+  font-size:9px;
+  letter-spacing:2px;
+}
+
+.bar b{
+  font-size:19px;
 }
 
 #crosshair{
-    position:absolute;
-    left:50%;
-    top:50%;
-    width:24px;
-    height:24px;
-    transform:translate(-50%,-50%);
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:22px;
+  height:22px;
+  transform:translate(-50%,-50%);
 }
 
 #crosshair:before,
 #crosshair:after{
-    content:"";
-    position:absolute;
-    background:#fff;
+  content:"";
+  position:absolute;
+  background:#fff;
+  opacity:.8;
 }
 
 #crosshair:before{
-    width:24px;
-    height:2px;
-    top:11px;
+  width:2px;
+  height:22px;
+  left:10px;
 }
 
 #crosshair:after{
-    height:24px;
-    width:2px;
-    left:11px;
+  height:2px;
+  width:22px;
+  top:10px;
+}
+
+#damage{
+  position:absolute;
+  inset:0;
+  background:#e33b3b;
+  opacity:0;
+  transition:opacity .1s;
 }
 
 #mobile{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:15;
+  pointer-events:none;
+}
+
+.joy{
+  position:absolute;
+  left:25px;
+  bottom:28px;
+  width:130px;
+  height:130px;
+  border-radius:50%;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.16);
+  pointer-events:auto;
+}
+
+.stick{
+  position:absolute;
+  width:56px;
+  height:56px;
+  left:37px;
+  top:37px;
+  border-radius:50%;
+  background:rgba(83,228,192,.38);
+  border:1px solid #55e7c2;
+}
+
+.mbuttons{
+  position:absolute;
+  right:22px;
+  bottom:25px;
+  display:grid;
+  grid-template-columns:70px 70px;
+  gap:12px;
+  pointer-events:auto;
+}
+
+.mbtn{
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(5,12,13,.75);
+  color:white;
+  font-weight:900;
+  font-size:12px;
+}
+
+.mbtn.fire{
+  width:84px;
+  height:84px;
+  grid-column:2;
+  background:rgba(220,55,55,.72);
+  border-color:#ff7777;
+}
+
+.mbtn.sprint{
+  background:rgba(83,228,192,.25);
+  border-color:#55e7c2;
+}
+
+#result{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:30;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.78);
+}
+
+.resultBox{
+  width:min(430px,90vw);
+  text-align:center;
+  padding:45px;
+  background:#050a0a;
+  border:1px solid #21433e;
+}
+
+#resultTitle{
+  font-size:52px;
+  font-weight:950;
+}
+
+#resultText{
+  margin:15px 0 25px;
+  color:#7d9692;
+}
+
+#again{
+  width:100%;
+  height:55px;
+  border:0;
+  background:#55e7c2;
+  font-weight:900;
+}
+
+@media(max-width:700px){
+  .card{
+    padding:28px;
+  }
+
+  .top{
+    top:10px;
+    left:10px;
+    right:10px;
+  }
+
+  .stat{
+    min-width:70px;
+    padding:8px 10px;
+  }
+
+  .stat b{
+    font-size:16px;
+  }
+
+  .bottom{
     display:none;
-    position:fixed;
-    inset:0;
-    z-index:50;
-    pointer-events:none;
-}
+  }
 
-.mobileBtn{
-    position:absolute;
-    pointer-events:auto;
-    border:1px solid rgba(255,255,255,.2);
-    background:rgba(10,20,18,.6);
-    color:white;
-    border-radius:50%;
-    width:68px;
-    height:68px;
-    font-weight:bold;
-    backdrop-filter:blur(5px);
-    user-select:none;
-}
+  #crosshair{
+    display:none;
+  }
 
-#shoot{
-    right:28px;
-    bottom:105px;
-    width:84px;
-    height:84px;
-    background:rgba(220,55,55,.45);
-}
-
-#jump{
-    right:125px;
-    bottom:115px;
-}
-
-#sprint{
-    right:125px;
-    bottom:35px;
-}
-
-#aim{
-    right:28px;
-    bottom:205px;
-}
-
-#reload{
-    right:125px;
-    bottom:195px;
-}
-
-#joy{
-    position:absolute;
-    left:25px;
-    bottom:35px;
-    width:145px;
-    height:145px;
-    border-radius:50%;
-    border:1px solid rgba(255,255,255,.2);
-    background:rgba(10,20,18,.4);
-    pointer-events:auto;
-}
-
-#stick{
-    position:absolute;
-    width:62px;
-    height:62px;
-    border-radius:50%;
-    left:41px;
-    top:41px;
-    background:rgba(80,223,191,.45);
-}
-
-@media(max-width:800px){
-    #mobile{
-        display:block;
-    }
-
-    .controls{
-        display:none;
-    }
-
-    #bottomHUD{
-        transform:scale(.8);
-        transform-origin:left bottom;
-    }
-
-    .hudbox{
-        transform:scale(.8);
-        transform-origin:top left;
-    }
-
-    #killsBox{
-        right:90px;
-    }
-
-    #weaponBox{
-        right:8px;
-    }
-}
-
-canvas{
-    position:fixed;
-    inset:0;
+  #mobile{
     display:block;
+  }
 }
 </style>
 </head>
@@ -321,99 +360,112 @@ canvas{
 <body>
 
 <div id="start">
-    <div class="card">
-        <div class="kicker">DISTRICT 10 // BATTLE ROYALE</div>
+  <div class="card">
+    <div class="kicker">DISTRICT 10 // URBAN COMBAT</div>
 
-        <div class="logo">
-            LAST<span>//</span>ALIVE
-        </div>
-
-        <div class="desc">
-            DROP INTO THE COMBAT ZONE.<br>
-            MOVE FAST. AIM CLEAN. SURVIVE.
-        </div>
-
-        <input
-            id="name"
-            maxlength="14"
-            autocomplete="off"
-            placeholder="ENTER PLAYER NAME"
-        >
-
-        <button id="enter" type="button">
-            DROP INTO DISTRICT →
-        </button>
-
-        <div id="loading">INITIALIZING GAME...</div>
-
-        <div class="controls">
-            WASD / ARROWS — MOVE<br>
-            SHIFT — SPRINT<br>
-            MOUSE — AIM<br>
-            LEFT CLICK — FIRE<br>
-            SPACE — JUMP<br>
-            R — RELOAD<br>
-            V — CAMERA
-        </div>
+    <div class="logo">
+      LAST<span>//</span>ALIVE
     </div>
+
+    <div class="desc">
+      Drop into the combat district.<br>
+      Move fast. Find weapons. Eliminate everyone.
+    </div>
+
+    <input
+      id="name"
+      maxlength="14"
+      autocomplete="off"
+      placeholder="ENTER PLAYER NAME"
+    >
+
+    <button id="enter">
+      DROP INTO DISTRICT →
+    </button>
+
+    <div class="controls">
+      WASD / ARROWS — MOVE<br>
+      SHIFT — SPRINT<br>
+      MOUSE — AIM<br>
+      LEFT CLICK — FIRE<br>
+      SPACE — DASH / JUMP
+    </div>
+  </div>
 </div>
+
+<canvas id="game"></canvas>
 
 <div id="hud">
 
-    <div id="aliveBox" class="hudbox">
-        <small>ALIVE</small>
-        <strong id="alive">12</strong>
+  <div class="top">
+
+    <div class="stat">
+      <small>ALIVE</small>
+      <b id="alive">10</b>
     </div>
 
-    <div id="zoneBox" class="hudbox">
-        <small>ZONE</small>
-        <strong id="zone">180m</strong>
+    <div class="stat">
+      <small>ZONE</small>
+      <b id="zone">900</b>
     </div>
 
-    <div id="killsBox" class="hudbox">
-        <small>KILLS</small>
-        <strong id="kills">0</strong>
+    <div class="stat">
+      <small>KILLS</small>
+      <b id="kills">0</b>
     </div>
 
-    <div id="weaponBox" class="hudbox">
-        <small>WEAPON</small>
-        <strong id="weapon">AR-01</strong>
+    <div class="stat">
+      <small>WEAPON</small>
+      <b>AR-01</b>
     </div>
 
-    <div id="bottomHUD">
-        <div class="stat">
-            <small>HP</small>
-            <b id="health">100</b>
-        </div>
+  </div>
 
-        <div class="stat">
-            <small>ARMOR</small>
-            <b id="armor">100</b>
-        </div>
+  <div id="crosshair"></div>
+  <div id="damage"></div>
 
-        <div class="stat">
-            <small>AMMO</small>
-            <b id="ammo">30 / 150</b>
-        </div>
+  <div class="bottom">
+
+    <div class="bar">
+      <small>HP</small>
+      <b id="hp">100</b>
     </div>
 
-    <div id="crosshair"></div>
+    <div class="bar">
+      <small>ARMOR</small>
+      <b id="armor">100</b>
+    </div>
+
+    <div class="bar">
+      <small>AMMO</small>
+      <b id="ammo">30 / 150</b>
+    </div>
+
+  </div>
+
 </div>
 
 <div id="mobile">
-    <div id="joy">
-        <div id="stick"></div>
-    </div>
 
-    <button class="mobileBtn" id="shoot">FIRE</button>
-    <button class="mobileBtn" id="aim">AIM</button>
-    <button class="mobileBtn" id="jump">JUMP</button>
-    <button class="mobileBtn" id="sprint">RUN</button>
-    <button class="mobileBtn" id="reload">R</button>
+  <div id="joy" class="joy">
+    <div id="stick" class="stick"></div>
+  </div>
+
+  <div class="mbuttons">
+    <button id="jump" class="mbtn">JUMP</button>
+    <button id="sprint" class="mbtn sprint">RUN</button>
+    <button id="fire" class="mbtn fire">FIRE</button>
+  </div>
+
 </div>
 
-<!-- IMPORTANT: only ONE Three.js script -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.min.js"></script>
+<div id="result">
+  <div class="resultBox">
+    <div id="resultTitle">ELIMINATED</div>
+    <div id="resultText"></div>
+    <button id="again">PLAY AGAIN</button>
+  </div>
+</div>
 
 <script src="./script.js"></script>
 
