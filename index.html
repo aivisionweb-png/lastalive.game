@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
   <title>LAST//ALIVE</title>
 
   <style>
+
     * {
       box-sizing: border-box;
     }
@@ -16,278 +18,708 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #080b0d;
-      font-family: Arial, Helvetica, sans-serif;
+      background: #050708;
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
     }
 
     canvas {
       display: block;
+      width: 100%;
+      height: 100%;
     }
+
+    /* =========================
+       START SCREEN
+    ========================= */
 
     #start {
       position: fixed;
       inset: 0;
-      z-index: 20;
+      z-index: 100;
+
       display: flex;
       align-items: center;
       justify-content: center;
+
       background:
-        radial-gradient(circle at 50% 40%, rgba(35, 70, 74, .35), transparent 40%),
-        linear-gradient(135deg, #050708, #101719);
+        radial-gradient(
+          circle at 50% 40%,
+          rgba(41, 230, 196, .14),
+          transparent 40%
+        ),
+        linear-gradient(
+          135deg,
+          #030506,
+          #101718
+        );
     }
 
-    .card {
-      width: min(430px, 90vw);
+    .start-card {
+      width: min(460px, 90vw);
+
       padding: 42px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(8,12,14,.88);
-      box-shadow: 0 30px 100px rgba(0,0,0,.65);
-      backdrop-filter: blur(18px);
+
+      border:
+        1px solid
+        rgba(255,255,255,.1);
+
+      background:
+        rgba(5,9,10,.92);
+
+      box-shadow:
+        0 40px 120px
+        rgba(0,0,0,.7);
+
+      backdrop-filter:
+        blur(20px);
     }
 
     .logo {
-      font-size: 42px;
+      color: #fff;
+
+      font-size: 44px;
+
       font-weight: 900;
-      letter-spacing: -2px;
-      color: white;
+
+      letter-spacing: -3px;
     }
 
-    .logo i {
-      color: #39e6c4;
-      font-style: normal;
+    .logo span {
+      color: #38e6c3;
     }
 
-    .sub {
+    .subtitle {
       margin-top: 8px;
-      margin-bottom: 30px;
+
       color: #758487;
-      font-size: 11px;
+
+      font-size: 10px;
+
       letter-spacing: 3px;
+    }
+
+    .description {
+      margin:
+        30px 0 22px;
+
+      color: #899597;
+
+      font-size: 12px;
+
+      line-height: 1.7;
     }
 
     #name {
       width: 100%;
+
       padding: 16px;
-      border: 1px solid #263638;
+
       outline: none;
-      background: #101719;
+
+      border:
+        1px solid
+        #263538;
+
+      background: #0c1214;
+
       color: white;
+
       font-size: 14px;
-      margin-bottom: 12px;
+    }
+
+    #name:focus {
+      border-color:
+        #38e6c3;
     }
 
     #enter {
       width: 100%;
+
+      margin-top: 12px;
+
       padding: 17px;
+
       border: 0;
+
       cursor: pointer;
-      background: #39e6c4;
-      color: #06100f;
+
+      background: #38e6c3;
+
+      color: #03100e;
+
       font-weight: 900;
+
       letter-spacing: 1px;
     }
 
-    #hud {
-      display: none;
+    #enter:hover {
+      background: #5af1d4;
+    }
+
+    /* =========================
+       LOADING
+    ========================= */
+
+    #loading {
       position: fixed;
       inset: 0;
-      z-index: 10;
-      pointer-events: none;
+
+      z-index: 90;
+
+      display: none;
+
+      align-items: center;
+      justify-content: center;
+
+      flex-direction: column;
+
+      background: #050708;
+
       color: white;
     }
 
-    #top {
-      position: absolute;
-      top: 22px;
-      left: 22px;
-      right: 22px;
-      display: flex;
-      justify-content: space-between;
+    #loading-title {
+      font-size: 25px;
+      font-weight: 900;
+      letter-spacing: 3px;
     }
 
-    .hudBox {
-      background: rgba(5,8,9,.72);
-      border: 1px solid rgba(255,255,255,.1);
-      padding: 12px 16px;
-      backdrop-filter: blur(10px);
-    }
+    #loading-text {
+      margin-top: 12px;
 
-    .label {
-      color: #7c8a8d;
-      font-size: 9px;
+      color: #778587;
+
+      font-size: 11px;
+
       letter-spacing: 2px;
     }
 
-    .value {
+    #loading-bar {
+      width: min(360px, 70vw);
+
+      height: 3px;
+
+      margin-top: 25px;
+
+      background: #182224;
+    }
+
+    #loading-progress {
+      width: 0%;
+
+      height: 100%;
+
+      background: #38e6c3;
+
+      transition:
+        width .15s linear;
+    }
+
+    /* =========================
+       HUD
+    ========================= */
+
+    #hud {
+      display: none;
+
+      position: fixed;
+
+      inset: 0;
+
+      z-index: 20;
+
+      pointer-events: none;
+
+      color: white;
+    }
+
+    #top-hud {
+      position: absolute;
+
+      top: 20px;
+
+      left: 20px;
+
+      right: 20px;
+
+      display: flex;
+
+      justify-content:
+        space-between;
+    }
+
+    .hud-box {
+      min-width: 92px;
+
+      padding:
+        11px 15px;
+
+      border:
+        1px solid
+        rgba(255,255,255,.1);
+
+      background:
+        rgba(4,7,8,.72);
+
+      backdrop-filter:
+        blur(12px);
+    }
+
+    .hud-label {
+      color: #778587;
+
+      font-size: 8px;
+
+      letter-spacing: 2px;
+    }
+
+    .hud-value {
       margin-top: 4px;
+
+      color: white;
+
       font-size: 18px;
+
       font-weight: 900;
     }
 
-    #bottom {
-      position: absolute;
-      left: 22px;
-      bottom: 22px;
-      display: flex;
-      gap: 10px;
-    }
-
-    .stat {
-      min-width: 90px;
-    }
+    /* =========================
+       CROSSHAIR
+    ========================= */
 
     #crosshair {
       position: absolute;
+
       left: 50%;
       top: 50%;
-      width: 18px;
-      height: 18px;
-      transform: translate(-50%, -50%);
+
+      width: 20px;
+      height: 20px;
+
+      transform:
+        translate(-50%, -50%);
     }
 
     #crosshair::before,
     #crosshair::after {
       content: "";
+
       position: absolute;
-      background: rgba(255,255,255,.9);
+
+      background: white;
+
+      opacity: .9;
     }
 
     #crosshair::before {
-      width: 18px;
+      width: 20px;
       height: 1px;
-      top: 9px;
+
+      left: 0;
+      top: 10px;
     }
 
     #crosshair::after {
       width: 1px;
-      height: 18px;
-      left: 9px;
+      height: 20px;
+
+      left: 10px;
+      top: 0;
     }
+
+    /* =========================
+       BOTTOM HUD
+    ========================= */
+
+    #bottom-hud {
+      position: absolute;
+
+      left: 20px;
+      bottom: 20px;
+
+      display: flex;
+
+      gap: 8px;
+    }
+
+    .bottom-box {
+      min-width: 95px;
+    }
+
+    /* =========================
+       CONTROLS
+    ========================= */
 
     #controls {
       position: absolute;
-      right: 22px;
-      bottom: 22px;
+
+      right: 20px;
+      bottom: 20px;
+
       text-align: right;
-      color: #9aa5a7;
+
+      color: #899597;
+
       font-size: 10px;
+
       line-height: 1.8;
+
       letter-spacing: 1px;
     }
 
+    /* =========================
+       DAMAGE VIGNETTE
+    ========================= */
+
+    #damage {
+      position: fixed;
+
+      inset: 0;
+
+      z-index: 18;
+
+      pointer-events: none;
+
+      opacity: 0;
+
+      background:
+        radial-gradient(
+          circle,
+          transparent 45%,
+          rgba(255,0,0,.38)
+        );
+
+      transition:
+        opacity .08s;
+    }
+
+    /* =========================
+       RESULT
+    ========================= */
+
     #result {
       display: none;
+
       position: fixed;
+
       inset: 0;
-      z-index: 30;
+
+      z-index: 110;
+
       align-items: center;
       justify-content: center;
-      background: rgba(0,0,0,.72);
+
+      background:
+        rgba(0,0,0,.75);
     }
 
-    .resultCard {
-      text-align: center;
-      background: #0b1012;
-      border: 1px solid #263638;
+    .result-card {
+      min-width: 360px;
+
       padding: 45px;
-      min-width: 340px;
+
+      text-align: center;
+
+      background: #090e10;
+
+      border:
+        1px solid
+        #263538;
+
+      box-shadow:
+        0 40px 100px
+        rgba(0,0,0,.7);
     }
 
-    #resultTitle {
-      color: #39e6c4;
-      font-size: 48px;
+    #result-title {
       margin: 0;
+
+      color: #38e6c3;
+
+      font-size: 50px;
+
+      font-weight: 900;
     }
 
-    #resultText {
-      color: #879396;
-      margin: 12px 0 25px;
+    #result-text {
+      margin:
+        12px 0 25px;
+
+      color: #899597;
     }
 
     #again {
-      pointer-events: auto;
-      padding: 14px 28px;
+      padding:
+        14px 30px;
+
       border: 0;
-      background: white;
-      font-weight: 900;
+
       cursor: pointer;
+
+      background: white;
+
+      color: #050708;
+
+      font-weight: 900;
     }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media(max-width: 700px) {
+
+      .logo {
+        font-size: 34px;
+      }
+
+      #top-hud {
+        gap: 5px;
+      }
+
+      .hud-box {
+        min-width: auto;
+        padding: 8px 10px;
+      }
+
+      .hud-value {
+        font-size: 14px;
+      }
+
+      #controls {
+        display: none;
+      }
+
+      #bottom-hud {
+        transform: scale(.8);
+        transform-origin: left bottom;
+      }
+
+    }
+
   </style>
 </head>
 
 <body>
 
-  <div id="start">
-    <div class="card">
-      <div class="logo">LAST<i>//</i>ALIVE</div>
-      <div class="sub">DISTRICT 07 // BATTLE ROYALE</div>
+  <!-- =========================
+       START
+  ========================== -->
+
+  <section id="start">
+
+    <div class="start-card">
+
+      <div class="logo">
+        LAST<span>//</span>ALIVE
+      </div>
+
+      <div class="subtitle">
+        DISTRICT 07 // BATTLE ROYALE
+      </div>
+
+      <div class="description">
+        Drop into the district.
+        Find weapons.
+        Eliminate enemies.
+        Stay inside the zone.
+        Be the last one alive.
+      </div>
 
       <input
         id="name"
         maxlength="14"
         autocomplete="off"
         placeholder="ENTER PLAYER NAME"
-      />
+      >
 
       <button id="enter">
         DROP INTO DISTRICT →
       </button>
-    </div>
-  </div>
-
-  <div id="hud">
-
-    <div id="top">
-
-      <div class="hudBox">
-        <div class="label">ALIVE</div>
-        <div class="value" id="alive">12</div>
-      </div>
-
-      <div class="hudBox">
-        <div class="label">ZONE</div>
-        <div class="value" id="zone">150m</div>
-      </div>
-
-      <div class="hudBox">
-        <div class="label">KILLS</div>
-        <div class="value" id="kills">0</div>
-      </div>
-
-      <div class="hudBox">
-        <div class="label">WEAPON</div>
-        <div class="value" id="weapon">AR-01</div>
-      </div>
 
     </div>
+
+  </section>
+
+
+  <!-- =========================
+       LOADING
+  ========================== -->
+
+  <section id="loading">
+
+    <div id="loading-title">
+      DISTRICT 07
+    </div>
+
+    <div id="loading-text">
+      LOADING BATTLEFIELD...
+    </div>
+
+    <div id="loading-bar">
+      <div id="loading-progress"></div>
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       DAMAGE
+  ========================== -->
+
+  <div id="damage"></div>
+
+
+  <!-- =========================
+       HUD
+  ========================== -->
+
+  <section id="hud">
+
+    <div id="top-hud">
+
+      <div class="hud-box">
+
+        <div class="hud-label">
+          ALIVE
+        </div>
+
+        <div
+          class="hud-value"
+          id="alive"
+        >
+          12
+        </div>
+
+      </div>
+
+
+      <div class="hud-box">
+
+        <div class="hud-label">
+          ZONE
+        </div>
+
+        <div
+          class="hud-value"
+          id="zone"
+        >
+          60m
+        </div>
+
+      </div>
+
+
+      <div class="hud-box">
+
+        <div class="hud-label">
+          KILLS
+        </div>
+
+        <div
+          class="hud-value"
+          id="kills"
+        >
+          0
+        </div>
+
+      </div>
+
+
+      <div class="hud-box">
+
+        <div class="hud-label">
+          WEAPON
+        </div>
+
+        <div
+          class="hud-value"
+          id="weapon"
+        >
+          AR-01
+        </div>
+
+      </div>
+
+    </div>
+
 
     <div id="crosshair"></div>
 
-    <div id="bottom">
 
-      <div class="hudBox stat">
-        <div class="label">HEALTH</div>
-        <div class="value" id="health">100</div>
+    <div id="bottom-hud">
+
+      <div class="hud-box bottom-box">
+
+        <div class="hud-label">
+          HEALTH
+        </div>
+
+        <div
+          class="hud-value"
+          id="health"
+        >
+          100
+        </div>
+
       </div>
 
-      <div class="hudBox stat">
-        <div class="label">ARMOR</div>
-        <div class="value" id="armor">100</div>
+
+      <div class="hud-box bottom-box">
+
+        <div class="hud-label">
+          ARMOR
+        </div>
+
+        <div
+          class="hud-value"
+          id="armor"
+        >
+          100
+        </div>
+
       </div>
 
-      <div class="hudBox stat">
-        <div class="label">AMMO</div>
-        <div class="value" id="ammo">30 / 150</div>
+
+      <div class="hud-box bottom-box">
+
+        <div class="hud-label">
+          AMMO
+        </div>
+
+        <div
+          class="hud-value"
+          id="ammo"
+        >
+          30 / 150
+        </div>
+
       </div>
 
-      <div class="hudBox stat">
-        <div class="label">MEDKIT</div>
-        <div class="value" id="medkits">2</div>
+
+      <div class="hud-box bottom-box">
+
+        <div class="hud-label">
+          MEDKIT
+        </div>
+
+        <div
+          class="hud-value"
+          id="medkits"
+        >
+          2
+        </div>
+
       </div>
 
     </div>
 
+
     <div id="controls">
+
       WASD — MOVE<br>
       SHIFT — SPRINT<br>
       SPACE — JUMP<br>
@@ -298,25 +730,54 @@
       1 / 2 / 3 — WEAPON<br>
       V — CAMERA<br>
       G — MEDKIT
+
     </div>
 
-  </div>
+  </section>
 
-  <div id="result">
-    <div class="resultCard">
-      <h1 id="resultTitle">BOOYAH!</h1>
-      <p id="resultText">WINNER</p>
-      <button id="again">PLAY AGAIN</button>
+
+  <!-- =========================
+       RESULT
+  ========================== -->
+
+  <section id="result">
+
+    <div class="result-card">
+
+      <h1 id="result-title">
+        BOOYAH!
+      </h1>
+
+      <p id="result-text">
+        LAST PLAYER ALIVE
+      </p>
+
+      <button id="again">
+        PLAY AGAIN
+      </button>
+
     </div>
-  </div>
 
-  <!-- THREE.JS -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.min.js"></script>
+  </section>
 
-  <!-- GLTF LOADER -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.170.0/examples/js/loaders/GLTFLoader.js"></script>
 
-  <script src="./script.js"></script>
+  <!-- =========================
+       THREE MODULE
+  ========================== -->
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three":
+        "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+    }
+  }
+  </script>
+
+  <script
+    type="module"
+    src="./script.js"
+  ></script>
 
 </body>
 </html>
