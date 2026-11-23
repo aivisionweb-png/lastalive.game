@@ -1,968 +1,969 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <title>LAST//ALIVE — Battle Royale</title>
-
-  <link rel="stylesheet" href="./style.css">
-
-  <style>
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      overflow: hidden;
-      background: #050907;
-      font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-      color: #ecfff5;
-    }
-
-    body {
-      user-select: none;
-    }
-
-    #game {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-    }
-
-    #game canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      cursor: crosshair;
-    }
-
-    /* =====================================================
-       START MENU
-    ===================================================== */
-
-    #menu {
-      position: fixed;
-      inset: 0;
-      z-index: 50;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      background:
-        radial-gradient(
-          circle at 50% 45%,
-          rgba(35, 110, 76, 0.20),
-          transparent 38%
-        ),
-        linear-gradient(
-          135deg,
-          rgba(3, 8, 6, 0.96),
-          rgba(5, 12, 9, 0.98)
-        );
-
-      backdrop-filter: blur(8px);
-    }
-
-    #menu .card {
-      width: min(560px, 90vw);
-      padding: 52px 48px;
-
-      border: 1px solid rgba(
-        111,
-        255,
-        171,
-        0.25
-      );
-
-      background:
-        linear-gradient(
-          145deg,
-          rgba(13, 27, 21, 0.95),
-          rgba(5, 13, 10, 0.97)
-        );
-
-      box-shadow:
-        0 35px 100px
-        rgba(0, 0, 0, 0.65),
-
-        inset 0 0 50px
-        rgba(81, 255, 153, 0.025);
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>LAST//ALIVE — Battle Royale</title>
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #050807;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  user-select: none;
+}
+
+#game {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
 
-      text-align: center;
-    }
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 
-    #menu h1 {
-      margin: 0;
+/* =========================
+   START SCREEN
+========================= */
 
-      font-size: clamp(
-        48px,
-        8vw,
-        88px
-      );
+#menu {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
 
-      letter-spacing: 0.08em;
-      font-weight: 900;
-      line-height: 0.9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-      color: #effff6;
-    }
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(37, 116, 78, .25),
+      rgba(2, 7, 5, .96) 65%
+    );
+}
 
-    #menu h1::after {
-      content: "";
-      display: block;
+.menuCard {
+  width: min(560px, 90vw);
 
-      width: 75px;
-      height: 4px;
+  padding: 55px 45px;
 
-      margin: 22px auto;
+  text-align: center;
 
-      background: #5effa5;
-      box-shadow:
-        0 0 18px
-        rgba(94, 255, 165, 0.7);
-    }
+  background:
+    linear-gradient(
+      145deg,
+      rgba(12, 27, 20, .96),
+      rgba(4, 11, 8, .98)
+    );
 
-    #menu .subtitle {
-      margin-bottom: 34px;
+  border:
+    1px solid
+    rgba(100,255,165,.25);
 
-      font-size: 12px;
-      letter-spacing: 0.28em;
+  box-shadow:
+    0 35px 100px
+    rgba(0,0,0,.7),
 
-      color: #7d998c;
-    }
+    inset 0 0 60px
+    rgba(83,255,156,.03);
+}
 
-    #play,
-    #again {
-      width: 100%;
+.menuTitle {
+  margin: 0;
 
-      padding: 18px 24px;
+  font-size: clamp(
+    45px,
+    8vw,
+    82px
+  );
 
-      border: 0;
+  font-weight: 900;
 
-      background: #62f6a4;
-      color: #06100a;
+  letter-spacing: .08em;
+}
 
-      font-size: 14px;
-      font-weight: 900;
+.menuTitle span {
+  color: #64ffa7;
+}
 
-      letter-spacing: 0.18em;
+.menuLine {
+  width: 80px;
+  height: 4px;
 
-      cursor: pointer;
+  margin: 22px auto;
 
-      transition:
-        transform 0.15s ease,
-        box-shadow 0.15s ease,
-        background 0.15s ease;
-    }
+  background: #64ffa7;
 
-    #play:hover,
-    #again:hover {
-      background: #8affbd;
+  box-shadow:
+    0 0 20px
+    rgba(100,255,167,.7);
+}
 
-      transform:
-        translateY(-2px);
+.menuSub {
+  color: #789184;
 
-      box-shadow:
-        0 12px 35px
-        rgba(91, 255, 160, 0.25);
-    }
+  font-size: 11px;
 
-    #play:active,
-    #again:active {
-      transform:
-        translateY(1px);
-    }
+  letter-spacing: .28em;
 
-    /* =====================================================
-       TOP LEFT
-    ===================================================== */
+  margin-bottom: 35px;
+}
 
-    #brand {
-      position: fixed;
+#play {
+  width: 100%;
 
-      top: 28px;
-      left: 28px;
+  padding: 19px;
 
-      z-index: 20;
+  border: none;
 
-      pointer-events: none;
-    }
+  background: #65f6a6;
 
-    #brand .logo {
-      font-size: 26px;
-      font-weight: 900;
+  color: #061009;
 
-      letter-spacing: 0.12em;
+  font-size: 13px;
 
-      color: #effff6;
-    }
+  font-weight: 900;
 
-    #brand .logo span {
-      color: #66ffa9;
-    }
+  letter-spacing: .2em;
 
-    #brand .district {
-      margin-top: 6px;
+  cursor: pointer;
 
-      font-size: 9px;
-      letter-spacing: 0.3em;
+  transition:
+    .18s ease;
+}
 
-      color: #71897d;
-    }
+#play:hover {
+  background: #8affbc;
 
-    /* =====================================================
-       TOP RIGHT
-    ===================================================== */
+  transform:
+    translateY(-2px);
 
-    #status {
-      position: fixed;
+  box-shadow:
+    0 12px 40px
+    rgba(100,255,165,.25);
+}
 
-      top: 22px;
-      right: 24px;
+/* =========================
+   BRAND
+========================= */
 
-      z-index: 20;
+#brand {
+  position: fixed;
 
-      min-width: 125px;
+  top: 25px;
+  left: 27px;
 
-      padding: 13px 16px;
+  z-index: 20;
 
-      border: 1px solid
-        rgba(112, 255, 170, 0.18);
+  pointer-events: none;
+}
 
-      background:
-        rgba(4, 13, 9, 0.82);
+.logo {
+  font-size: 27px;
 
-      backdrop-filter: blur(8px);
-    }
+  font-weight: 900;
 
-    #status .label {
-      font-size: 8px;
+  letter-spacing: .12em;
+}
 
-      letter-spacing: 0.28em;
+.logo span {
+  color: #64ffa7;
+}
 
-      color: #70887b;
-    }
+.district {
+  margin-top: 6px;
 
-    #alive {
-      display: block;
+  font-size: 9px;
 
-      margin-top: 3px;
+  color: #708579;
 
-      font-size: 25px;
-      font-weight: 900;
-    }
+  letter-spacing: .28em;
+}
 
-    #zone {
-      display: block;
+/* =========================
+   TOP RIGHT
+========================= */
 
-      margin-top: 9px;
+#status {
+  position: fixed;
 
-      font-size: 9px;
+  top: 22px;
+  right: 24px;
 
-      letter-spacing: 0.2em;
+  z-index: 20;
 
-      color: #66ffa9;
-    }
+  min-width: 130px;
 
-    /* =====================================================
-       CROSSHAIR
-    ===================================================== */
+  padding: 14px 17px;
 
-    #crosshair {
-      position: fixed;
+  background:
+    rgba(3,12,8,.82);
 
-      left: 50%;
-      top: 50%;
+  border:
+    1px solid
+    rgba(100,255,165,.18);
 
-      width: 25px;
-      height: 25px;
+  backdrop-filter:
+    blur(10px);
+}
 
-      transform:
-        translate(-50%, -50%);
+.statusLabel {
+  font-size: 8px;
 
-      z-index: 15;
+  color: #71867b;
 
-      pointer-events: none;
-    }
+  letter-spacing: .25em;
+}
 
-    #crosshair::before,
-    #crosshair::after {
-      content: "";
+#alive {
+  display: block;
 
-      position: absolute;
+  font-size: 27px;
 
-      background: rgba(
-        255,
-        255,
-        255,
-        0.92
-      );
+  font-weight: 900;
+}
 
-      box-shadow:
-        0 0 8px
-        rgba(255,255,255,0.45);
-    }
+#zone {
+  margin-top: 8px;
 
-    #crosshair::before {
-      width: 2px;
-      height: 23px;
+  font-size: 9px;
 
-      left: 11px;
-      top: 1px;
-    }
+  color: #64ffa7;
 
-    #crosshair::after {
-      height: 2px;
-      width: 23px;
+  letter-spacing: .2em;
+}
 
-      left: 1px;
-      top: 11px;
-    }
+/* =========================
+   CROSSHAIR
+========================= */
 
-    /* =====================================================
-       BOTTOM LEFT PLAYER HUD
-    ===================================================== */
+#crosshair {
+  position: fixed;
 
-    #playerHud {
-      position: fixed;
+  left: 50%;
+  top: 50%;
 
-      left: 25px;
-      bottom: 25px;
+  width: 26px;
+  height: 26px;
 
-      z-index: 20;
+  transform:
+    translate(-50%, -50%);
 
-      width: 325px;
+  z-index: 30;
 
-      padding: 18px;
+  pointer-events: none;
+}
 
-      border: 1px solid
-        rgba(111,255,171,0.15);
+#crosshair::before,
+#crosshair::after {
+  content: "";
 
-      background:
-        rgba(3, 12, 8, 0.84);
+  position: absolute;
 
-      backdrop-filter: blur(9px);
-    }
+  background: white;
 
-    .hudRow {
-      display: flex;
+  box-shadow:
+    0 0 8px
+    rgba(255,255,255,.7);
+}
 
-      justify-content: space-between;
-      align-items: center;
+#crosshair::before {
+  width: 2px;
+  height: 25px;
 
-      margin-bottom: 7px;
-    }
+  left: 12px;
+  top: 0;
+}
 
-    .hudLabel {
-      font-size: 10px;
+#crosshair::after {
+  width: 25px;
+  height: 2px;
 
-      letter-spacing: 0.2em;
+  left: 0;
+  top: 12px;
+}
 
-      color: #89a194;
-    }
+/* =========================
+   PLAYER HUD
+========================= */
 
-    .hudValue {
-      font-size: 12px;
+#playerHud {
+  position: fixed;
 
-      font-weight: 900;
-    }
+  left: 24px;
+  bottom: 24px;
 
-    .bar {
-      width: 100%;
-      height: 6px;
+  z-index: 20;
 
-      margin-bottom: 13px;
+  width: 330px;
 
-      background:
-        rgba(255,255,255,0.08);
+  padding: 17px;
 
-      overflow: hidden;
-    }
+  background:
+    rgba(3,12,8,.84);
 
-    #hpbar {
-      height: 100%;
-      width: 100%;
+  border:
+    1px solid
+    rgba(100,255,165,.15);
 
-      background: #63f6a4;
+  backdrop-filter:
+    blur(10px);
+}
 
-      box-shadow:
-        0 0 12px
-        rgba(99,246,164,0.5);
-    }
+.hudRow {
+  display: flex;
 
-    #armorbar {
-      height: 100%;
-      width: 65%;
+  justify-content:
+    space-between;
 
-      background: #66c8ff;
+  margin-bottom: 7px;
+}
 
-      box-shadow:
-        0 0 12px
-        rgba(102,200,255,0.35);
-    }
+.hudLabel {
+  font-size: 9px;
 
-    /* =====================================================
-       WEAPON HUD
-    ===================================================== */
+  color: #789184;
 
-    #weaponHud {
-      position: fixed;
+  letter-spacing: .2em;
+}
 
-      right: 25px;
-      bottom: 25px;
+.hudValue {
+  font-size: 12px;
 
-      z-index: 20;
+  font-weight: 900;
+}
 
-      width: 290px;
+.bar {
+  width: 100%;
+  height: 6px;
 
-      padding: 18px;
+  background:
+    rgba(255,255,255,.08);
 
-      border: 1px solid
-        rgba(111,255,171,0.15);
+  margin-bottom: 13px;
+}
 
-      background:
-        rgba(3, 12, 8, 0.84);
+#hpbar {
+  height: 100%;
+  width: 100%;
 
-      backdrop-filter: blur(9px);
+  background: #64f6a4;
 
-      text-align: right;
-    }
+  box-shadow:
+    0 0 12px
+    rgba(100,246,164,.5);
+}
 
-    #weaponName {
-      display: block;
+#armorbar {
+  height: 100%;
+  width: 65%;
 
-      font-size: 10px;
+  background: #66c9ff;
+}
 
-      letter-spacing: 0.2em;
+/* =========================
+   WEAPON HUD
+========================= */
 
-      color: #8ca99a;
+#weaponHud {
+  position: fixed;
 
-      margin-bottom: 4px;
-    }
+  right: 24px;
+  bottom: 24px;
 
-    #ammo {
-      font-size: 36px;
+  z-index: 20;
 
-      font-weight: 900;
+  width: 310px;
 
-      line-height: 1;
-    }
+  padding: 17px;
 
-    #ammo small {
-      font-size: 14px;
+  text-align: right;
 
-      color: #71887c;
-    }
+  background:
+    rgba(3,12,8,.84);
 
-    #controls {
-      margin-top: 13px;
+  border:
+    1px solid
+    rgba(100,255,165,.15);
 
-      font-size: 8px;
+  backdrop-filter:
+    blur(10px);
+}
 
-      letter-spacing: 0.16em;
+#weaponName {
+  display: block;
 
-      color: #608072;
-    }
+  color: #81998d;
 
-    #controls span {
-      color: #6affaa;
-    }
+  font-size: 9px;
 
-    /* =====================================================
-       KILL FEED
-    ===================================================== */
+  letter-spacing: .2em;
+}
 
-    #killfeed {
-      position: fixed;
+#ammo {
+  margin-top: 3px;
 
-      right: 25px;
-      top: 115px;
+  font-size: 37px;
 
-      z-index: 20;
+  line-height: 1;
 
-      width: 245px;
+  font-weight: 900;
+}
 
-      display: flex;
-      flex-direction: column;
+#ammo small {
+  color: #71877c;
 
-      gap: 5px;
+  font-size: 14px;
+}
 
-      pointer-events: none;
-    }
+#controls {
+  margin-top: 13px;
 
-    .kill {
-      padding: 8px 11px;
+  color: #607a6d;
 
-      background:
-        rgba(5, 13, 9, 0.78);
+  font-size: 8px;
 
-      border-right: 2px solid
-        #5dffa2;
+  line-height: 1.6;
 
-      font-size: 10px;
+  letter-spacing: .13em;
+}
 
-      letter-spacing: 0.1em;
+#controls span {
+  color: #65f6a6;
+}
 
-      color: #dfffee;
-    }
+/* =========================
+   MODE
+========================= */
 
-    /* =====================================================
-       TOAST
-    ===================================================== */
+#mode {
+  position: fixed;
 
-    #toast {
-      position: fixed;
+  left: 50%;
+  bottom: 25px;
 
-      left: 50%;
-      top: 18%;
+  z-index: 20;
 
-      transform:
-        translateX(-50%);
+  transform:
+    translateX(-50%);
 
-      z-index: 30;
+  padding: 7px 13px;
 
-      padding: 13px 22px;
+  background:
+    rgba(3,8,6,.7);
 
-      border: 1px solid
-        rgba(100,255,170,0.25);
+  border:
+    1px solid
+    rgba(255,255,255,.08);
 
-      background:
-        rgba(3, 12, 8, 0.86);
+  color: #789184;
 
-      color: #79ffb2;
+  font-size: 8px;
 
-      font-size: 11px;
+  letter-spacing: .2em;
 
-      font-weight: 900;
+  pointer-events: none;
+}
 
-      letter-spacing: 0.22em;
+/* =========================
+   KILL FEED
+========================= */
 
-      opacity: 0;
+#killfeed {
+  position: fixed;
 
-      transition:
-        opacity 0.2s ease;
+  right: 25px;
+  top: 110px;
 
-      pointer-events: none;
-    }
+  z-index: 20;
 
-    /* =====================================================
-       ZONE WARNING
-    ===================================================== */
+  width: 260px;
 
-    #zonewarn {
-      position: fixed;
+  display: flex;
 
-      left: 50%;
-      top: 80px;
+  flex-direction: column;
 
-      transform:
-        translateX(-50%);
+  gap: 5px;
 
-      z-index: 20;
+  pointer-events: none;
+}
 
-      padding: 8px 18px;
+.kill {
+  padding: 8px 11px;
 
-      border: 1px solid
-        rgba(255, 90, 90, 0.4);
+  background:
+    rgba(3,10,7,.78);
 
-      background:
-        rgba(80, 10, 10, 0.72);
+  border-right:
+    2px solid
+    #64ffa7;
 
-      color: #ff8d8d;
+  color: #ddffec;
 
-      font-size: 9px;
+  font-size: 9px;
 
-      font-weight: 900;
+  letter-spacing: .1em;
+}
 
-      letter-spacing: 0.22em;
+/* =========================
+   ZONE WARNING
+========================= */
 
-      display: none;
+#zoneWarning {
+  position: fixed;
 
-      pointer-events: none;
-    }
+  left: 50%;
+  top: 90px;
 
-    /* =====================================================
-       DAMAGE EFFECT
-    ===================================================== */
+  transform:
+    translateX(-50%);
 
-    #damage {
-      position: fixed;
+  z-index: 20;
 
-      inset: 0;
+  display: none;
 
-      z-index: 14;
+  padding: 8px 18px;
 
-      pointer-events: none;
+  background:
+    rgba(90,10,10,.8);
 
-      background:
-        rgba(255,0,0,0);
+  border:
+    1px solid
+    rgba(255,90,90,.45);
 
-      transition:
-        background 0.12s ease;
-    }
+  color: #ff9b9b;
 
-    /* =====================================================
-       MODE INDICATOR
-    ===================================================== */
+  font-size: 9px;
 
-    #mode {
-      position: fixed;
+  font-weight: 900;
 
-      left: 50%;
-      bottom: 25px;
+  letter-spacing: .2em;
+}
 
-      transform:
-        translateX(-50%);
+/* =========================
+   DAMAGE
+========================= */
 
-      z-index: 20;
+#damage {
+  position: fixed;
 
-      padding: 7px 13px;
+  inset: 0;
 
-      border: 1px solid
-        rgba(255,255,255,0.08);
+  z-index: 15;
 
-      background:
-        rgba(3,8,6,0.65);
+  pointer-events: none;
 
-      color: #789184;
+  background:
+    rgba(255,0,0,0);
 
-      font-size: 8px;
+  transition:
+    background .1s;
+}
 
-      letter-spacing: 0.2em;
+/* =========================
+   TOAST
+========================= */
 
-      pointer-events: none;
-    }
+#toast {
+  position: fixed;
 
-    /* =====================================================
-       MOBILE
-    ===================================================== */
+  left: 50%;
+  top: 18%;
 
-    @media (max-width: 700px) {
+  transform:
+    translateX(-50%);
 
-      #brand {
-        top: 16px;
-        left: 16px;
-      }
+  z-index: 50;
 
-      #brand .logo {
-        font-size: 20px;
-      }
+  padding: 12px 22px;
 
-      #status {
-        top: 14px;
-        right: 14px;
-      }
+  background:
+    rgba(3,12,8,.9);
 
-      #playerHud {
-        left: 12px;
-        bottom: 12px;
+  border:
+    1px solid
+    rgba(100,255,165,.3);
 
-        width: 220px;
+  color: #6affa9;
 
-        padding: 12px;
-      }
+  font-size: 10px;
 
-      #weaponHud {
-        right: 12px;
-        bottom: 12px;
+  font-weight: 900;
 
-        width: 210px;
+  letter-spacing: .2em;
 
-        padding: 12px;
-      }
+  opacity: 0;
 
-      #ammo {
-        font-size: 28px;
-      }
+  pointer-events: none;
 
-      #controls {
-        display: none;
-      }
+  transition:
+    opacity .2s;
+}
 
-      #killfeed {
-        right: 12px;
-        top: 90px;
-        width: 190px;
-      }
+/* =========================
+   DEATH SCREEN
+========================= */
 
-    }
+#death {
+  position: fixed;
 
-  </style>
+  inset: 0;
+
+  z-index: 90;
+
+  display: none;
+
+  align-items: center;
+  justify-content: center;
+
+  background:
+    rgba(5,0,0,.82);
+
+  backdrop-filter:
+    blur(5px);
+}
+
+.deathCard {
+  text-align: center;
+}
+
+.deathCard h2 {
+  margin: 0;
+
+  font-size: 65px;
+
+  letter-spacing: .08em;
+}
+
+.deathCard p {
+  color: #9caba2;
+
+  letter-spacing: .2em;
+}
+
+#restart {
+  margin-top: 20px;
+
+  padding: 14px 30px;
+
+  border: none;
+
+  background: #65f6a6;
+
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:700px) {
+
+  #playerHud {
+    width: 220px;
+
+    left: 12px;
+    bottom: 12px;
+  }
+
+  #weaponHud {
+    width: 210px;
+
+    right: 12px;
+    bottom: 12px;
+  }
+
+  #controls {
+    display: none;
+  }
+
+  #brand {
+    top: 15px;
+    left: 15px;
+  }
+
+  .logo {
+    font-size: 20px;
+  }
+
+}
+
+</style>
 </head>
 
 <body>
 
-  <!-- =====================================================
-       THREE.JS GAME CANVAS
-  ====================================================== -->
+<div id="game"></div>
 
-  <div id="game"></div>
+<div id="brand">
 
-
-  <!-- =====================================================
-       BRAND
-  ====================================================== -->
-
-  <div id="brand">
-
-    <div class="logo">
-      LAST<span>//</span>ALIVE
-    </div>
-
-    <div class="district">
-      DISTRICT 07 // BATTLE ROYALE
-    </div>
-
+  <div class="logo">
+    LAST<span>//</span>ALIVE
   </div>
 
-
-  <!-- =====================================================
-       TOP STATUS
-  ====================================================== -->
-
-  <div id="status">
-
-    <div class="label">
-      ALIVE
-    </div>
-
-    <strong id="alive">
-      12
-    </strong>
-
-    <div
-      id="zone"
-      class="label"
-    >
-      ZONE 100%
-    </div>
-
+  <div class="district">
+    DISTRICT 07 // BATTLE ROYALE
   </div>
 
+</div>
 
-  <!-- =====================================================
-       CROSSHAIR
-  ====================================================== -->
+<div id="status">
 
-  <div id="crosshair"></div>
-
-
-  <!-- =====================================================
-       ZONE WARNING
-  ====================================================== -->
-
-  <div id="zonewarn">
-    RETURN TO SAFE ZONE
+  <div class="statusLabel">
+    ALIVE
   </div>
 
+  <strong id="alive">
+    12
+  </strong>
 
-  <!-- =====================================================
-       DAMAGE EFFECT
-  ====================================================== -->
-
-  <div id="damage"></div>
-
-
-  <!-- =====================================================
-       KILL FEED
-  ====================================================== -->
-
-  <div id="killfeed"></div>
-
-
-  <!-- =====================================================
-       TOAST
-  ====================================================== -->
-
-  <div id="toast"></div>
-
-
-  <!-- =====================================================
-       PLAYER HUD
-  ====================================================== -->
-
-  <div id="playerHud">
-
-    <div class="hudRow">
-
-      <span class="hudLabel">
-        HEALTH
-      </span>
-
-      <span
-        class="hudValue"
-        id="hp"
-      >
-        100
-      </span>
-
-    </div>
-
-    <div class="bar">
-
-      <div id="hpbar"></div>
-
-    </div>
-
-
-    <div class="hudRow">
-
-      <span class="hudLabel">
-        ARMOR
-      </span>
-
-      <span
-        class="hudValue"
-        id="armor"
-      >
-        65
-      </span>
-
-    </div>
-
-    <div class="bar">
-
-      <div id="armorbar"></div>
-
-    </div>
-
+  <div id="zone">
+    ZONE 100%
   </div>
 
+</div>
 
-  <!-- =====================================================
-       WEAPON HUD
-  ====================================================== -->
+<div id="crosshair"></div>
 
-  <div id="weaponHud">
+<div id="zoneWarning">
+  RETURN TO SAFE ZONE
+</div>
 
-    <span id="weaponName">
-      ASSAULT RIFLE
+<div id="damage"></div>
+
+<div id="killfeed"></div>
+
+<div id="toast"></div>
+
+<div id="playerHud">
+
+  <div class="hudRow">
+
+    <span class="hudLabel">
+      HEALTH
     </span>
 
-    <div id="ammo">
+    <span
+      class="hudValue"
+      id="hp"
+    >
+      100
+    </span>
 
-      <span id="mag">
-        30
+  </div>
+
+  <div class="bar">
+    <div id="hpbar"></div>
+  </div>
+
+
+  <div class="hudRow">
+
+    <span class="hudLabel">
+      ARMOR
+    </span>
+
+    <span
+      class="hudValue"
+      id="armor"
+    >
+      65
+    </span>
+
+  </div>
+
+  <div class="bar">
+    <div id="armorbar"></div>
+  </div>
+
+</div>
+
+<div id="weaponHud">
+
+  <span id="weaponName">
+    ASSAULT RIFLE
+  </span>
+
+  <div id="ammo">
+
+    <span id="mag">
+      30
+    </span>
+
+    <small>
+      /
+      <span id="reserve">
+        120
       </span>
-
-      <small>
-        /
-        <span id="reserve">
-          120
-        </span>
-      </small>
-
-    </div>
-
-    <div id="controls">
-
-      <span>WASD</span>
-      MOVE &nbsp;&nbsp;
-
-      <span>SHIFT</span>
-      SPRINT &nbsp;&nbsp;
-
-      <span>SPACE</span>
-      JUMP
-
-      <br><br>
-
-      <span>MOUSE</span>
-      AIM/SHOOT &nbsp;&nbsp;
-
-      <span>V</span>
-      1P/3P
-
-      <br><br>
-
-      <span>R</span>
-      RELOAD &nbsp;&nbsp;
-
-      <span>G</span>
-      MEDKIT
-
-      <br><br>
-
-      <span>1</span>
-      AR &nbsp;
-
-      <span>2</span>
-      SMG &nbsp;
-
-      <span>3</span>
-      SHOTGUN
-
-    </div>
+    </small>
 
   </div>
 
+  <div id="controls">
 
-  <!-- =====================================================
-       CAMERA MODE
-  ====================================================== -->
+    <span>WASD</span> MOVE &nbsp;
 
-  <div id="mode">
-    THIRD PERSON
+    <span>SHIFT</span> SPRINT &nbsp;
+
+    <span>SPACE</span> JUMP
+
+    <br>
+
+    <span>MOUSE</span> AIM/SHOOT &nbsp;
+
+    <span>V</span> 1P/3P
+
+    <br>
+
+    <span>R</span> RELOAD &nbsp;
+
+    <span>C</span> CROUCH &nbsp;
+
+    <span>G</span> MEDKIT
+
+    <br>
+
+    <span>1</span> AR &nbsp;
+
+    <span>2</span> SMG &nbsp;
+
+    <span>3</span> SHOTGUN
+
   </div>
 
+</div>
 
-  <!-- =====================================================
-       START MENU
-  ====================================================== -->
+<div id="mode">
+  THIRD PERSON
+</div>
 
-  <div id="menu">
 
-    <div class="card">
+<!-- START SCREEN -->
 
-      <h1>
-        LAST//ALIVE
-      </h1>
+<div id="menu">
 
-      <div class="subtitle">
-        DISTRICT 07 // 12 PLAYERS // ONE SURVIVOR
-      </div>
+  <div class="menuCard">
 
-      <button
-        id="play"
-        type="button"
-      >
-        DROP INTO DISTRICT 07
-      </button>
+    <h1 class="menuTitle">
+      LAST<span>//</span>ALIVE
+    </h1>
 
+    <div class="menuLine"></div>
+
+    <div class="menuSub">
+      DISTRICT 07 // 12 PLAYERS // ONE SURVIVOR
     </div>
 
+    <button
+      id="play"
+      type="button"
+      onclick="ENTER_GAME()"
+    >
+      DROP INTO DISTRICT 07
+    </button>
+
   </div>
 
+</div>
 
-  <!-- =====================================================
-       SCRIPTS
-       IMPORTANT: THREE.JS FIRST
-       SCRIPT.JS SECOND
-  ====================================================== -->
 
-  <script
-    src="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.min.js"
-  ></script>
+<!-- DEATH -->
 
-  <script
-    src="./script.js"
-  ></script>
+<div id="death">
+
+  <div class="deathCard">
+
+    <h2>
+      ELIMINATED
+    </h2>
+
+    <p>
+      YOU DID NOT SURVIVE DISTRICT 07
+    </p>
+
+    <button id="restart">
+      REDEPLOY
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- THREE.JS FIRST -->
+
+<script
+  src="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.min.js"
+></script>
+
+<!-- GAME JS SECOND -->
+
+<script src="./script.js"></script>
+
+
+<!-- HARD ENTER FALLBACK -->
+
+<script>
+
+function ENTER_GAME() {
+
+  const menu =
+    document.getElementById("menu");
+
+  if (menu) {
+
+    menu.style.display = "none";
+
+  }
+
+  if (
+    typeof window.startGame ===
+    "function"
+  ) {
+
+    window.startGame();
+
+  }
+
+  const canvas =
+    document.querySelector("canvas");
+
+  if (
+    canvas &&
+    canvas.requestPointerLock
+  ) {
+
+    canvas.requestPointerLock();
+
+  }
+
+}
+
+</script>
 
 </body>
 </html>
