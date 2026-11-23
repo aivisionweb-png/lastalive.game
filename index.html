@@ -2,109 +2,115 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
 <title>LAST//ALIVE</title>
 
 <style>
 *{
   box-sizing:border-box;
-  margin:0;
-  padding:0;
   -webkit-tap-highlight-color:transparent;
 }
 
 html,body{
+  margin:0;
   width:100%;
   height:100%;
   overflow:hidden;
-  background:#050809;
+  background:#07100e;
   font-family:Arial,Helvetica,sans-serif;
+  touch-action:none;
 }
 
 body{
-  touch-action:none;
-  color:#fff;
+  position:relative;
 }
 
-#game{
+canvas{
   position:fixed;
   inset:0;
   width:100%;
   height:100%;
   display:block;
-  background:#101719;
 }
+
+/* ================= START ================= */
 
 #start{
   position:fixed;
   inset:0;
-  z-index:20;
+  z-index:50;
   display:flex;
-  align-items:center;
   justify-content:center;
+  align-items:center;
   background:
-    radial-gradient(circle at 50% 40%,#123b35 0,#06100f 35%,#030506 75%);
+    radial-gradient(circle at 50% 45%,#12372f 0%,#07100e 45%,#020504 100%);
 }
 
-.card{
+.startCard{
   width:min(520px,90vw);
   padding:42px;
-  border:1px solid #1d3733;
-  background:rgba(4,10,10,.92);
-  box-shadow:0 30px 100px #000;
+  border:1px solid rgba(90,230,190,.25);
+  background:rgba(4,12,10,.88);
+  box-shadow:
+    0 0 80px rgba(50,220,170,.08),
+    inset 0 0 40px rgba(50,220,170,.025);
 }
 
 .kicker{
-  color:#55e2be;
+  color:#55e2bf;
   font-size:12px;
+  font-weight:800;
   letter-spacing:5px;
-  font-weight:bold;
-  margin-bottom:15px;
+  margin-bottom:14px;
 }
 
 .logo{
-  font-size:clamp(42px,8vw,76px);
-  font-weight:900;
-  letter-spacing:-5px;
+  color:#fff;
+  font-size:clamp(44px,9vw,82px);
   line-height:.9;
+  font-weight:1000;
+  letter-spacing:-5px;
 }
 
-.logo i{
-  color:#51e1bb;
-  font-style:normal;
+.logo span{
+  color:#51e4bd;
 }
 
 .desc{
-  color:#83918f;
-  margin:25px 0;
-  line-height:1.6;
+  margin-top:24px;
+  color:#91aaa4;
   font-size:14px;
+  line-height:1.7;
 }
 
 #name{
   width:100%;
-  height:58px;
+  margin-top:28px;
+  height:56px;
   padding:0 18px;
-  background:#08100f;
-  border:1px solid #28403b;
   color:#fff;
+  background:#081512;
+  border:1px solid #25483f;
   outline:none;
   font-size:16px;
 }
 
 #name:focus{
-  border-color:#51e1bb;
+  border-color:#51e4bd;
 }
 
 #enter{
   width:100%;
   height:58px;
-  margin-top:10px;
+  margin-top:12px;
   border:0;
-  background:#51e1bb;
-  color:#03100c;
-  font-weight:900;
+  background:#51e4bd;
+  color:#03100d;
+  font-weight:1000;
   font-size:15px;
+  letter-spacing:1px;
   cursor:pointer;
 }
 
@@ -114,70 +120,79 @@ body{
 
 .controls{
   margin-top:24px;
-  color:#60716e;
+  color:#58736c;
   font-size:11px;
   line-height:2;
   letter-spacing:1px;
 }
 
+/* ================= HUD ================= */
+
 #hud{
+  display:none;
   position:fixed;
   inset:0;
-  z-index:5;
+  z-index:10;
   pointer-events:none;
-  display:none;
+  color:#fff;
+}
+
+.topHud{
+  position:absolute;
+  top:18px;
+  left:18px;
+  right:18px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
 }
 
 .stat{
-  position:absolute;
-  top:18px;
-  min-width:90px;
-  padding:12px 15px;
+  min-width:95px;
+  padding:10px 13px;
   border:1px solid rgba(255,255,255,.1);
-  background:rgba(2,7,7,.7);
+  background:rgba(0,0,0,.45);
   backdrop-filter:blur(8px);
 }
 
 .stat small{
   display:block;
-  color:#71807d;
+  color:#82938f;
   font-size:9px;
   letter-spacing:2px;
-  margin-bottom:4px;
 }
 
 .stat strong{
+  display:block;
+  margin-top:3px;
   font-size:20px;
 }
 
-#aliveBox{left:18px}
-#zoneBox{left:125px}
-#killBox{right:125px}
-#weaponBox{right:18px}
-
-.bottom{
+.bottomHud{
   position:absolute;
   left:18px;
   bottom:18px;
   display:flex;
-  gap:10px;
+  gap:8px;
 }
 
-.bar{
-  min-width:100px;
-  padding:10px 13px;
+.box{
+  padding:11px 15px;
+  min-width:90px;
+  background:rgba(0,0,0,.55);
   border:1px solid rgba(255,255,255,.1);
-  background:rgba(2,7,7,.75);
 }
 
-.bar small{
+.box small{
   display:block;
-  color:#71807d;
+  color:#81908d;
   font-size:9px;
   letter-spacing:2px;
 }
 
-.bar strong{
+.box strong{
+  display:block;
+  margin-top:4px;
   font-size:20px;
 }
 
@@ -185,9 +200,9 @@ body{
   position:absolute;
   left:50%;
   top:50%;
+  transform:translate(-50%,-50%);
   width:24px;
   height:24px;
-  transform:translate(-50%,-50%);
 }
 
 #crosshair:before,
@@ -195,169 +210,193 @@ body{
   content:"";
   position:absolute;
   background:#fff;
-  opacity:.85;
+  opacity:.9;
 }
 
 #crosshair:before{
-  width:24px;
-  height:2px;
-  left:0;
-  top:11px;
-}
-
-#crosshair:after{
   width:2px;
   height:24px;
   left:11px;
-  top:0;
 }
 
-#help{
+#crosshair:after{
+  height:2px;
+  width:24px;
+  top:11px;
+}
+
+#message{
   position:absolute;
-  right:18px;
-  bottom:18px;
-  text-align:right;
-  color:#77827f;
-  font-size:10px;
-  line-height:1.8;
-}
-
-#result{
-  position:fixed;
-  inset:0;
-  z-index:30;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:rgba(0,0,0,.78);
-}
-
-.resultCard{
+  left:50%;
+  top:18%;
+  transform:translateX(-50%);
+  color:#fff;
+  font-size:13px;
+  letter-spacing:3px;
+  font-weight:bold;
   text-align:center;
-  padding:45px;
-  background:#050b0a;
-  border:1px solid #24403a;
 }
 
-#resultTitle{
-  font-size:52px;
-  font-weight:900;
-}
+/* ================= MOBILE ================= */
 
-#resultText{
-  color:#82908c;
-  margin:15px 0 25px;
-}
-
-#again{
-  border:0;
-  padding:15px 30px;
-  background:#51e1bb;
-  color:#03100c;
-  font-weight:900;
-}
-
-/* MOBILE */
 #mobile{
   display:none;
   position:fixed;
   inset:0;
-  z-index:10;
+  z-index:30;
   pointer-events:none;
+}
+
+#joystick{
+  position:absolute;
+  left:24px;
+  bottom:30px;
+  width:130px;
+  height:130px;
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,.18);
+  background:rgba(0,0,0,.2);
+  pointer-events:auto;
 }
 
 #stick{
   position:absolute;
-  left:24px;
-  bottom:25px;
-  width:130px;
-  height:130px;
+  width:58px;
+  height:58px;
+  left:34px;
+  top:34px;
   border-radius:50%;
-  background:rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.15);
-  pointer-events:auto;
-}
-
-#stickKnob{
-  position:absolute;
-  width:55px;
-  height:55px;
-  left:37px;
-  top:37px;
-  border-radius:50%;
-  background:rgba(81,225,187,.55);
+  background:rgba(80,225,190,.55);
+  border:2px solid rgba(255,255,255,.3);
 }
 
 .mobileBtn{
   position:absolute;
-  width:70px;
-  height:70px;
+  width:68px;
+  height:68px;
   border-radius:50%;
-  border:1px solid rgba(255,255,255,.2);
-  background:rgba(10,18,18,.75);
-  color:white;
-  font-weight:bold;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(0,0,0,.48);
+  color:#fff;
+  font-weight:900;
   pointer-events:auto;
-  user-select:none;
 }
 
 #fire{
-  right:25px;
-  bottom:35px;
-  width:90px;
-  height:90px;
-  background:rgba(225,75,75,.55);
-}
-
-#jump{
-  right:135px;
-  bottom:35px;
+  right:28px;
+  bottom:38px;
+  width:88px;
+  height:88px;
+  background:rgba(210,55,55,.48);
 }
 
 #sprint{
-  right:135px;
-  bottom:120px;
+  right:126px;
+  bottom:44px;
 }
 
-#aim{
-  right:25px;
+#jump{
+  right:38px;
   bottom:145px;
 }
 
+#reload{
+  right:125px;
+  bottom:140px;
+}
+
+#switch{
+  right:30px;
+  top:110px;
+}
+
+#mobileAim{
+  position:absolute;
+  right:0;
+  top:0;
+  width:55%;
+  height:70%;
+  pointer-events:auto;
+}
+
+/* ================= RESULT ================= */
+
+#result{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:100;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.72);
+}
+
+.resultCard{
+  width:min(480px,90vw);
+  padding:45px;
+  text-align:center;
+  background:#07110f;
+  border:1px solid #31564c;
+}
+
+#resultTitle{
+  color:#fff;
+  font-size:48px;
+  margin:0;
+}
+
+#resultText{
+  color:#8fa9a2;
+  margin:14px 0 25px;
+}
+
+#again{
+  width:100%;
+  height:52px;
+  border:0;
+  background:#51e4bd;
+  font-weight:900;
+  cursor:pointer;
+}
+
+/* PHONE */
+
 @media(max-width:800px){
-  #mobile{
-    display:block;
-  }
-
-  #help{
-    display:none;
-  }
-
-  #crosshair{
-    opacity:.6;
-  }
-
-  .stat{
-    transform:scale(.8);
-    transform-origin:top left;
-  }
-
-  #weaponBox{
-    transform:scale(.8);
-    transform-origin:top right;
-  }
-
-  .bottom{
-    transform:scale(.8);
-    transform-origin:bottom left;
-  }
-
-  .card{
+  .startCard{
     padding:28px;
   }
 
-  #resultTitle{
-    font-size:38px;
+  .logo{
+    font-size:52px;
+  }
+
+  .topHud{
+    top:8px;
+    left:8px;
+    right:8px;
+  }
+
+  .stat{
+    min-width:65px;
+    padding:7px;
+  }
+
+  .stat strong{
+    font-size:15px;
+  }
+
+  .bottomHud{
+    left:8px;
+    bottom:8px;
+  }
+
+  .box{
+    min-width:70px;
+    padding:7px;
+  }
+
+  .box strong{
+    font-size:15px;
   }
 }
 </style>
@@ -365,20 +404,20 @@ body{
 
 <body>
 
-<canvas id="game"></canvas>
-
 <div id="start">
-  <div class="card">
+  <div class="startCard">
 
-    <div class="kicker">DISTRICT 10 // BATTLE ROYALE</div>
+    <div class="kicker">
+      DISTRICT 10 // SURVIVAL
+    </div>
 
     <div class="logo">
       LAST<span>//</span>ALIVE
     </div>
 
     <div class="desc">
-      Drop into the district. Find the enemy.
-      Move fast. Aim clean. Be the last alive.
+      DROP INTO THE DISTRICT.<br>
+      MOVE FAST. AIM CLEAN. SURVIVE.
     </div>
 
     <input
@@ -396,9 +435,9 @@ body{
       WASD / ARROWS — MOVE<br>
       SHIFT — SPRINT<br>
       MOUSE — AIM<br>
-      LMB — FIRE<br>
+      LEFT CLICK — FIRE<br>
       SPACE — JUMP<br>
-      C — CROUCH
+      R — RELOAD
     </div>
 
   </div>
@@ -406,84 +445,108 @@ body{
 
 <div id="hud">
 
-  <div class="stat" id="aliveBox">
-    <small>ALIVE</small>
-    <strong id="alive">12</strong>
-  </div>
+  <div class="topHud">
 
-  <div class="stat" id="zoneBox">
-    <small>ZONE</small>
-    <strong id="zone">180m</strong>
-  </div>
-
-  <div class="stat" id="killBox">
-    <small>KILLS</small>
-    <strong id="kills">0</strong>
-  </div>
-
-  <div class="stat" id="weaponBox">
-    <small>WEAPON</small>
-    <strong id="weapon">AR-01</strong>
-  </div>
-
-  <div class="bottom">
-
-    <div class="bar">
-      <small>HEALTH</small>
-      <strong id="health">100</strong>
+    <div class="stat">
+      <small>ALIVE</small>
+      <strong id="alive">12</strong>
     </div>
 
-    <div class="bar">
-      <small>ARMOR</small>
-      <strong id="armor">100</strong>
+    <div class="stat">
+      <small>ZONE</small>
+      <strong id="zone">100%</strong>
     </div>
 
-    <div class="bar">
-      <small>AMMO</small>
-      <strong id="ammo">30 / 150</strong>
+    <div class="stat">
+      <small>KILLS</small>
+      <strong id="kills">0</strong>
     </div>
 
-    <div class="bar">
-      <small>MEDKIT</small>
-      <strong id="medkits">2</strong>
+    <div class="stat">
+      <small>WEAPON</small>
+      <strong id="weapon">AR</strong>
     </div>
 
   </div>
 
   <div id="crosshair"></div>
 
-  <div id="help">
-    WASD / ARROWS — MOVE<br>
-    SHIFT — SPRINT<br>
-    SPACE — JUMP<br>
-    C — CROUCH<br>
-    MOUSE — AIM<br>
-    LMB — FIRE<br>
-    R — RELOAD<br>
-    1 / 2 / 3 — WEAPON
+  <div id="message"></div>
+
+  <div class="bottomHud">
+
+    <div class="box">
+      <small>HP</small>
+      <strong id="health">100</strong>
+    </div>
+
+    <div class="box">
+      <small>ARMOR</small>
+      <strong id="armor">100</strong>
+    </div>
+
+    <div class="box">
+      <small>AMMO</small>
+      <strong id="ammo">30 / 150</strong>
+    </div>
+
+    <div class="box">
+      <small>MED</small>
+      <strong id="medkits">2</strong>
+    </div>
+
   </div>
 
 </div>
 
 <div id="mobile">
 
-  <div id="stick">
-    <div id="stickKnob"></div>
+  <div id="joystick">
+    <div id="stick"></div>
   </div>
 
-  <button class="mobileBtn" id="fire">FIRE</button>
-  <button class="mobileBtn" id="jump">JUMP</button>
-  <button class="mobileBtn" id="sprint">RUN</button>
-  <button class="mobileBtn" id="aim">AIM</button>
+  <div id="mobileAim"></div>
+
+  <button class="mobileBtn" id="fire">
+    FIRE
+  </button>
+
+  <button class="mobileBtn" id="sprint">
+    RUN
+  </button>
+
+  <button class="mobileBtn" id="jump">
+    JUMP
+  </button>
+
+  <button class="mobileBtn" id="reload">
+    R
+  </button>
+
+  <button class="mobileBtn" id="switch">
+    GUN
+  </button>
 
 </div>
 
 <div id="result">
+
   <div class="resultCard">
-    <div id="resultTitle">BOOYAH!</div>
-    <div id="resultText"></div>
-    <button id="again">PLAY AGAIN</button>
+
+    <h1 id="resultTitle">
+      ELIMINATED
+    </h1>
+
+    <div id="resultText">
+      0 KILLS
+    </div>
+
+    <button id="again">
+      PLAY AGAIN
+    </button>
+
   </div>
+
 </div>
 
 <script src="./script.js"></script>
