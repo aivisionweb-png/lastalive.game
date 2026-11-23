@@ -3,7 +3,7 @@
    Socket.IO multiplayer client
    ========================================= */
 
-const SERVER_URL = "http://localhost:3000";
+const SERVER_URL = "https://lastalive-game.onrender.com";
 // After deploying server.js, change this to:
 // const SERVER_URL = "https://YOUR-SERVER-URL.com";
 
