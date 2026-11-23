@@ -1,155 +1,497 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+
   <title>LAST//ALIVE — DISTRICT 09</title>
-  <link rel="stylesheet" href="./style.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #050708;
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      touch-action: none;
+    }
+
+    canvas {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+    }
+
+    /* ================= START ================= */
+
+    #start {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(circle at 50% 40%, #17362f 0%, #08100f 35%, #030405 75%);
+    }
+
+    .start-card {
+      width: min(460px, calc(100vw - 32px));
+      padding: 42px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(5,8,9,.9);
+      box-shadow: 0 30px 100px rgba(0,0,0,.65);
+    }
+
+    .brand {
+      font-size: clamp(36px, 8vw, 64px);
+      font-weight: 900;
+      letter-spacing: -3px;
+      line-height: .9;
+    }
+
+    .brand i {
+      color: #36d7a7;
+      font-style: normal;
+    }
+
+    .district {
+      margin-top: 12px;
+      color: #6d8580;
+      letter-spacing: 4px;
+      font-size: 11px;
+    }
+
+    .description {
+      margin: 30px 0;
+      color: #88928f;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    #name {
+      width: 100%;
+      height: 58px;
+      padding: 0 18px;
+      border: 1px solid #263331;
+      outline: none;
+      background: #080d0d;
+      color: white;
+      font-size: 15px;
+      letter-spacing: 1px;
+    }
+
+    #name:focus {
+      border-color: #36d7a7;
+    }
+
+    #enter {
+      width: 100%;
+      height: 60px;
+      margin-top: 12px;
+      border: 0;
+      background: #36d7a7;
+      color: #03100c;
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      cursor: pointer;
+    }
+
+    #enter:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    #loader {
+      margin-top: 15px;
+      color: #647572;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-align: center;
+    }
+
+    /* ================= HUD ================= */
+
+    #hud {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .hud-box {
+      position: absolute;
+      min-width: 80px;
+      padding: 14px 16px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(3,6,7,.55);
+      backdrop-filter: blur(8px);
+    }
+
+    .label {
+      color: #71807e;
+      font-size: 9px;
+      letter-spacing: 2px;
+    }
+
+    .value {
+      margin-top: 5px;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    #aliveBox {
+      top: 20px;
+      left: 20px;
+    }
+
+    #zoneBox {
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    #killsBox {
+      top: 20px;
+      right: 140px;
+    }
+
+    #weaponBox {
+      top: 20px;
+      right: 20px;
+    }
+
+    #bottomHud {
+      position: absolute;
+      left: 20px;
+      bottom: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    #crosshair {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 28px;
+      font-weight: 200;
+      color: white;
+      text-shadow: 0 0 8px #000;
+    }
+
+    #controls {
+      position: absolute;
+      right: 20px;
+      bottom: 20px;
+      text-align: right;
+      color: #9aa5a2;
+      font-size: 11px;
+      line-height: 1.8;
+    }
+
+    /* ================= RESULT ================= */
+
+    #result {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.72);
+    }
+
+    .result-card {
+      text-align: center;
+      padding: 50px;
+      border: 1px solid rgba(255,255,255,.15);
+      background: #080b0c;
+    }
+
+    #resultTitle {
+      font-size: 52px;
+      font-weight: 900;
+    }
+
+    #resultText {
+      color: #89938f;
+      margin: 15px 0 30px;
+    }
+
+    #again {
+      border: 0;
+      padding: 16px 28px;
+      background: #36d7a7;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    /* ================= MOBILE ================= */
+
+    #mobileControls {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    .mobile-btn {
+      position: absolute;
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.2);
+      background: rgba(10,15,16,.55);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      pointer-events: auto;
+      user-select: none;
+    }
+
+    #mUp {
+      left: 82px;
+      bottom: 142px;
+    }
+
+    #mLeft {
+      left: 14px;
+      bottom: 76px;
+    }
+
+    #mDown {
+      left: 82px;
+      bottom: 76px;
+    }
+
+    #mRight {
+      left: 150px;
+      bottom: 76px;
+    }
+
+    #mFire {
+      right: 22px;
+      bottom: 110px;
+      width: 82px;
+      height: 82px;
+      background: rgba(190,45,45,.45);
+    }
+
+    #mAim {
+      right: 116px;
+      bottom: 54px;
+    }
+
+    #mSprint {
+      right: 22px;
+      bottom: 25px;
+    }
+
+    #mJump {
+      right: 116px;
+      bottom: 126px;
+    }
+
+    @media (max-width: 800px), (pointer: coarse) {
+      #mobileControls {
+        display: block;
+      }
+
+      #controls {
+        display: none;
+      }
+
+      #bottomHud {
+        transform: scale(.82);
+        transform-origin: left bottom;
+      }
+
+      #killsBox {
+        right: 110px;
+      }
+
+      .hud-box {
+        padding: 9px 11px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .start-card {
+        padding: 28px;
+      }
+
+      #weaponBox {
+        top: 82px;
+      }
+
+      #killsBox {
+        top: 82px;
+        right: 20px;
+      }
+
+      #zoneBox {
+        top: 82px;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-  <canvas id="game"></canvas>
-
-  <!-- START -->
-  <section id="startScreen">
+  <!-- START SCREEN -->
+  <div id="start">
     <div class="start-card">
-      <div class="eyebrow">DISTRICT 09 // BATTLE ROYALE</div>
-      <h1>LAST<span>//</span>ALIVE</h1>
-      <p>
-        DROP INTO THE CITY.<br>
-        MOVE FAST. AIM CLEAN. BE THE LAST ALIVE.
-      </p>
+
+      <div class="brand">
+        LAST<span>//</span>ALIVE
+      </div>
+
+      <div class="district">
+        DISTRICT 09 // URBAN COMBAT
+      </div>
+
+      <div class="description">
+        Enter the district. Find weapons. Move fast.
+        Aim freely and eliminate everyone standing
+        between you and the last position.
+      </div>
 
       <input
-        id="playerName"
+        id="name"
         maxlength="14"
-        placeholder="PLAYER NAME"
         autocomplete="off"
-      >
+        placeholder="ENTER PLAYER NAME"
+      />
 
-      <button id="playButton">
-        DROP INTO DISTRICT
+      <button id="enter" disabled>
+        LOADING ENGINE...
       </button>
 
-      <div class="controls">
-        WASD / ARROWS — MOVE<br>
-        SHIFT — SPRINT<br>
-        MOUSE — AIM<br>
-        LMB — FIRE<br>
-        SPACE — JUMP<br>
-        C — CROUCH
+      <div id="loader">
+        INITIALIZING 3D ENGINE
       </div>
-    </div>
-  </section>
 
+    </div>
+  </div>
 
   <!-- HUD -->
   <div id="hud">
 
-    <div class="top-left">
+    <div id="aliveBox" class="hud-box">
+      <div class="label">ALIVE</div>
+      <div id="alive" class="value">12</div>
+    </div>
+
+    <div id="zoneBox" class="hud-box">
+      <div class="label">ZONE</div>
+      <div id="zone" class="value">150m</div>
+    </div>
+
+    <div id="killsBox" class="hud-box">
+      <div class="label">KILLS</div>
+      <div id="kills" class="value">0</div>
+    </div>
+
+    <div id="weaponBox" class="hud-box">
+      <div class="label">WEAPON</div>
+      <div id="weapon" class="value">AR-01</div>
+    </div>
+
+    <div id="bottomHud">
+
       <div class="hud-box">
-        <small>ALIVE</small>
-        <strong id="alive">15</strong>
+        <div class="label">HEALTH</div>
+        <div id="health" class="value">100</div>
       </div>
 
       <div class="hud-box">
-        <small>KILLS</small>
-        <strong id="kills">0</strong>
-      </div>
-    </div>
-
-    <div class="zone-box">
-      <small>SAFE ZONE</small>
-      <strong id="zone">360m</strong>
-    </div>
-
-    <div class="weapon-box">
-      <small id="weaponName">ASSAULT RIFLE</small>
-      <strong id="ammo">30 / 120</strong>
-    </div>
-
-    <div class="crosshair">
-      <i></i>
-      <i></i>
-      <i></i>
-      <i></i>
-    </div>
-
-    <div class="bottom-left">
-
-      <div class="stat">
-        <span>HEALTH</span>
-        <b id="health">100</b>
-        <div class="bar">
-          <div id="healthBar"></div>
-        </div>
+        <div class="label">ARMOR</div>
+        <div id="armor" class="value">100</div>
       </div>
 
-      <div class="stat">
-        <span>ARMOR</span>
-        <b id="armor">65</b>
+      <div class="hud-box">
+        <div class="label">AMMO</div>
+        <div id="ammo" class="value">30 / 150</div>
+      </div>
+
+      <div class="hud-box">
+        <div class="label">MEDKIT</div>
+        <div id="medkits" class="value">2</div>
       </div>
 
     </div>
 
-    <div class="mini-info">
-      <span id="locationText">DISTRICT 09</span>
-      <span>● ONLINE</span>
+    <div id="crosshair">+</div>
+
+    <div id="controls">
+      WASD / ARROWS — MOVE<br>
+      SHIFT — SPRINT<br>
+      SPACE — JUMP<br>
+      C — CROUCH<br>
+      MOUSE — AIM<br>
+      LMB — FIRE<br>
+      R — RELOAD<br>
+      1 / 2 / 3 — WEAPON<br>
+      V — CAMERA<br>
+      G — MEDKIT
     </div>
 
   </div>
 
-
-  <!-- DAMAGE -->
-  <div id="damage"></div>
-
-
-  <!-- MOBILE CONTROLS -->
+  <!-- MOBILE -->
   <div id="mobileControls">
 
-    <div id="joystick">
-      <div id="stick">MOVE</div>
-    </div>
+    <div id="mUp" class="mobile-btn">▲</div>
+    <div id="mLeft" class="mobile-btn">◀</div>
+    <div id="mDown" class="mobile-btn">▼</div>
+    <div id="mRight" class="mobile-btn">▶</div>
 
-    <button id="fireButton">FIRE</button>
-    <button id="aimButton">AIM</button>
-    <button id="jumpButton">JUMP</button>
-    <button id="sprintButton">SPRINT</button>
-    <button id="crouchButton">CROUCH</button>
+    <div id="mFire" class="mobile-btn">●</div>
+    <div id="mAim" class="mobile-btn">◎</div>
+    <div id="mSprint" class="mobile-btn">⚡</div>
+    <div id="mJump" class="mobile-btn">↑</div>
 
   </div>
 
-
   <!-- RESULT -->
-  <section id="deathScreen">
+  <div id="result">
 
     <div class="result-card">
-
-      <div class="eyebrow">DISTRICT 09</div>
-
-      <h2>ELIMINATED</h2>
-
-      <div class="result-line"></div>
-
-      <p class="subtitle">
-        THE DISTRICT WON.
-      </p>
-
-      <button id="restartButton">
-        DROP AGAIN
-      </button>
-
+      <div id="resultTitle">ELIMINATED</div>
+      <div id="resultText"></div>
+      <button id="again">PLAY AGAIN</button>
     </div>
 
-  </section>
+  </div>
 
+  <!-- IMPORTANT: THREE FIRST -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.min.js"
+    crossorigin="anonymous">
+  </script>
 
-  <!-- Three.js -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.min.js"></script>
-
-  <!-- Game -->
+  <!-- GAME SECOND -->
   <script src="./script.js"></script>
 
 </body>
