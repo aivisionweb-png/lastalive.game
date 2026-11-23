@@ -1,11 +1,5 @@
-/* =========================================
-   LAST//ALIVE — CLIENT
-   Socket.IO multiplayer client
-   ========================================= */
-
-const SERVER_URL = "https://lastalive-game.onrender.com";
-// After deploying server.js, change this to:
-// const SERVER_URL = "https://YOUR-SERVER-URL.com";
+const SERVER_URL =
+  "https://lastalive-game.onrender.com";
 
 let socket = null;
 
@@ -28,12 +22,8 @@ const keys = {
   right: false
 };
 
-const $ = (id) => document.getElementById(id);
-
-
-/* =========================================
-   SCREEN SYSTEM
-   ========================================= */
+const $ = (id) =>
+  document.getElementById(id);
 
 const screens = [
   "home",
@@ -42,58 +32,39 @@ const screens = [
   "result"
 ];
 
-function showScreen(screenName) {
+function showScreen(name) {
   screens.forEach((screen) => {
-    const el = $(screen);
+    const element = $(screen);
 
-    if (el) {
-      el.classList.toggle(
+    if (element) {
+      element.classList.toggle(
         "active",
-        screen === screenName
+        screen === name
       );
     }
   });
 }
 
+function error(id, message) {
+  const element = $(id);
 
-/* =========================================
-   ERROR / TOAST
-   ========================================= */
-
-function showError(id, message) {
-  const el = $(id);
-
-  if (el) {
-    el.textContent = message || "";
+  if (element) {
+    element.textContent =
+      message || "";
   }
 }
 
 function toast(message) {
-  const old = document.querySelector(".toast");
+  document
+    .querySelector(".toast")
+    ?.remove();
 
-  if (old) {
-    old.remove();
-  }
-
-  const element = document.createElement("div");
+  const element =
+    document.createElement("div");
 
   element.className = "toast";
-  element.textContent = message;
 
-  element.style.cssText = `
-    position: fixed;
-    top: 85px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 9999;
-    background: #171b19;
-    color: white;
-    border: 1px solid #b8ff3d;
-    padding: 11px 18px;
-    border-radius: 9px;
-    font-size: 12px;
-    font-weight: 700;
-  `;
+  element.textContent = message;
 
   document.body.appendChild(element);
 
@@ -102,145 +73,149 @@ function toast(message) {
   }, 2200);
 }
 
-
-/* =========================================
-   SANITIZE ROOM CODE
-   ========================================= */
-
-function cleanRoomCode(value) {
-  return String(value)
+function clean(value) {
+  return String(value || "")
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, "")
     .slice(0, 6);
 }
 
+function escapeHTML(value) {
+  return String(value).replace(
+    /[&<>"']/g,
+    (character) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    }[character])
+  );
+}
 
-/* =========================================
-   CONNECT SOCKET
-   ========================================= */
+
+/* SOCKET */
 
 function connectSocket() {
 
-  if (socket && socket.connected) {
+  if (socket?.connected) {
     return;
   }
 
-  try {
+  socket = io(
+    SERVER_URL,
+    {
+      transports: [
+        "websocket",
+        "polling"
+      ],
 
-    socket = io(SERVER_URL, {
-      transports: ["websocket", "polling"],
-      timeout: 8000,
+      timeout: 10000,
+
       reconnection: true,
-      reconnectionAttempts: 5
-    });
 
-    socket.on("connect", () => {
+      reconnectionAttempts: 8
+    }
+  );
 
-      myId = socket.id;
+
+  socket.on(
+    "connect",
+    () => {
+
+      myId =
+        socket.id;
 
       console.log(
-        "Connected to server:",
+        "CONNECTED",
         socket.id
       );
 
-      showError("homeError", "");
+      error(
+        "homeError",
+        ""
+      );
+    }
+  );
 
-    });
 
-
-    socket.on("connect_error", (error) => {
+  socket.on(
+    "connect_error",
+    (err) => {
 
       console.error(
-        "Socket connection error:",
-        error
+        "Socket error:",
+        err
       );
 
-      showError(
+      error(
         "homeError",
-        "Cannot connect to multiplayer server."
+        "Multiplayer server connection failed."
       );
+    }
+  );
 
-    });
 
-
-    socket.on("disconnect", (reason) => {
-
-      console.log(
-        "Disconnected:",
-        reason
-      );
+  socket.on(
+    "disconnect",
+    () => {
 
       if (room) {
-        toast("Connection lost");
+        toast(
+          "CONNECTION LOST"
+        );
       }
+    }
+  );
 
-    });
 
-
-    /* ================================
-       ROOM CREATED
-       ================================ */
-
-    socket.on("room-created", (data) => {
-
-      console.log("Room created:", data);
+  socket.on(
+    "room-created",
+    (data) => {
 
       room = data.room;
+
       isHost = true;
 
-      state.players = data.players || [];
+      state.players =
+        data.players || [];
 
       openLobby();
+    }
+  );
 
-    });
 
-
-    /* ================================
-       ROOM JOINED
-       ================================ */
-
-    socket.on("room-joined", (data) => {
-
-      console.log("Joined room:", data);
+  socket.on(
+    "room-joined",
+    (data) => {
 
       room = data.room;
+
       isHost = false;
 
-      state.players = data.players || [];
+      state.players =
+        data.players || [];
 
       openLobby();
+    }
+  );
 
-    });
 
+  socket.on(
+    "lobby",
+    (data) => {
 
-    /* ================================
-       LOBBY UPDATE
-       ================================ */
-
-    socket.on("lobby", (data) => {
-
-      console.log(
-        "Lobby update:",
-        data
-      );
-
-      state.players = data.players || [];
+      state.players =
+        data.players || [];
 
       renderLobby();
+    }
+  );
 
-    });
 
-
-    /* ================================
-       GAME START
-       ================================ */
-
-    socket.on("game-start", (data) => {
-
-      console.log(
-        "Game started:",
-        data
-      );
+  socket.on(
+    "game-start",
+    (data) => {
 
       state = data;
 
@@ -248,328 +223,254 @@ function connectSocket() {
 
       renderGame();
 
-    });
+      runCountdown();
+    }
+  );
 
 
-    /* ================================
-       LIVE GAME STATE
-       ================================ */
-
-    socket.on("game-state", (data) => {
+  socket.on(
+    "game-state",
+    (data) => {
 
       state = data;
 
       renderGame();
+    }
+  );
 
-    });
 
-
-    /* ================================
-       ROUND RESULT
-       ================================ */
-
-    socket.on("round-result", (data) => {
-
-      console.log(
-        "Round result:",
-        data
-      );
+  socket.on(
+    "round-result",
+    (data) => {
 
       state = data;
 
       renderResult();
+    }
+  );
 
-    });
 
+  socket.on(
+    "room-error",
+    (message) => {
 
-    /* ================================
-       ROOM ERROR
-       ================================ */
-
-    socket.on("room-error", (message) => {
-
-      console.error(
-        "Room error:",
-        message
-      );
-
-      showError(
+      error(
         "homeError",
         message
       );
 
-      showError(
+      error(
         "lobbyError",
         message
       );
 
       toast(message);
-
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    showError(
-      "homeError",
-      "Multiplayer connection failed."
-    );
-
-  }
-
+    }
+  );
 }
 
 
-/* =========================================
-   CREATE ROOM
-   ========================================= */
+/* EMIT */
 
-function createRoom() {
-
-  showError("homeError", "");
-
-  playerName =
-    ($("nameInput").value.trim() || "PLAYER")
-      .slice(0, 14);
+function emitWhenConnected(
+  event,
+  data
+) {
 
   connectSocket();
 
-  const sendCreate = () => {
-
-    socket.emit(
-      "create-room",
-      {
-        name: playerName
-      }
-    );
-
-  };
-
   if (socket.connected) {
 
-    sendCreate();
+    socket.emit(
+      event,
+      data
+    );
 
   } else {
 
     socket.once(
       "connect",
-      sendCreate
+      () => {
+
+        socket.emit(
+          event,
+          data
+        );
+
+      }
     );
-
   }
-
 }
 
 
-/* =========================================
-   JOIN ROOM
-   ========================================= */
+/* ROOM */
+
+function createRoom() {
+
+  playerName =
+    (
+      $("nameInput")
+        .value
+        .trim() ||
+      "PLAYER"
+    ).slice(0, 14);
+
+  error(
+    "homeError",
+    ""
+  );
+
+  emitWhenConnected(
+    "create-room",
+    {
+      name: playerName
+    }
+  );
+}
+
 
 function joinRoom() {
 
-  showError("homeError", "");
-
   playerName =
-    ($("nameInput").value.trim() || "PLAYER")
-      .slice(0, 14);
+    (
+      $("nameInput")
+        .value
+        .trim() ||
+      "PLAYER"
+    ).slice(0, 14);
 
   room =
-    cleanRoomCode(
-      $("roomInput").value
+    clean(
+      $("roomInput")
+        .value
     );
 
   if (room.length !== 6) {
 
-    showError(
+    error(
       "homeError",
       "Enter a 6-character room code."
     );
 
     return;
-
   }
 
-  connectSocket();
+  error(
+    "homeError",
+    ""
+  );
 
-  const sendJoin = () => {
-
-    socket.emit(
-      "join-room",
-      {
-        room: room,
-        name: playerName
-      }
-    );
-
-  };
-
-  if (socket.connected) {
-
-    sendJoin();
-
-  } else {
-
-    socket.once(
-      "connect",
-      sendJoin
-    );
-
-  }
-
+  emitWhenConnected(
+    "join-room",
+    {
+      room,
+      name: playerName
+    }
+  );
 }
 
-
-/* =========================================
-   OPEN LOBBY
-   ========================================= */
 
 function openLobby() {
 
   showScreen("lobby");
 
-  $("roomCode").textContent = room;
+  $("roomCode")
+    .textContent = room;
 
   renderLobby();
-
 }
 
-
-/* =========================================
-   RENDER LOBBY
-   ========================================= */
 
 function renderLobby() {
 
-  const count =
-    state.players.length;
+  const players =
+    state.players || [];
 
-  $("count").textContent =
-    `${count}/8`;
+  $("count")
+    .textContent =
+    players.length + "/8";
 
+  $("playerList")
+    .innerHTML =
+    players
+      .map(
+        (player) => {
 
-  $("playerList").innerHTML =
-    state.players
-      .map((player) => {
+          return `
+            <div
+              class="player
+              ${player.host ? "host" : ""}
+              ${player.id === myId ? "me" : ""}"
+            >
 
-        return `
-          <div class="player ${
-            player.host ? "host" : ""
-          }">
+              <span class="player-name">
+                ${escapeHTML(player.name)}
+              </span>
 
-            <span>
-              ${escapeHTML(player.name)}
-            </span>
+              <span class="player-meta">
 
-            <em>
-              ${
-                player.host
-                  ? "HOST"
-                  : "READY"
-              }
-            </em>
+                ${
+                  player.id === myId
+                    ? "YOU · "
+                    : ""
+                }
 
-          </div>
-        `;
+                ${
+                  player.host
+                    ? "HOST"
+                    : "READY"
+                }
 
-      })
+              </span>
+
+            </div>
+          `;
+        }
+      )
       .join("");
 
 
-  const startButton =
-    $("startBtn");
-
-  if (startButton) {
-
-    startButton.disabled =
-      !isHost ||
-      state.players.length < 2;
-
-  }
-
+  $("startBtn")
+    .disabled =
+    !isHost ||
+    players.length < 2;
 }
 
-
-/* =========================================
-   ESCAPE HTML
-   ========================================= */
-
-function escapeHTML(value) {
-
-  return String(value)
-    .replace(/[&<>"']/g, (character) => {
-
-      const map = {
-
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-
-      };
-
-      return map[character];
-
-    });
-
-}
-
-
-/* =========================================
-   START GAME
-   ========================================= */
 
 function startGame() {
 
-  if (!socket) {
-    return;
-  }
+  if (
+    isHost &&
+    room &&
+    state.players.length >= 2
+  ) {
 
-  if (!isHost) {
-    return;
-  }
-
-  if (!room) {
-    return;
-  }
-
-  if (state.players.length < 2) {
-
-    toast(
-      "Need at least 2 players"
+    socket.emit(
+      "start-game",
+      {
+        room
+      }
     );
 
-    return;
+  } else {
 
+    toast(
+      "NEED 2 PLAYERS"
+    );
   }
-
-  socket.emit(
-    "start-game",
-    {
-      room: room
-    }
-  );
-
 }
 
 
-/* =========================================
-   RENDER GAME
-   ========================================= */
+/* GAME */
 
 function renderGame() {
 
-  if (!$("arena")) {
-    return;
-  }
-
-
-  $("round").textContent =
+  $("round")
+    .textContent =
     state.round || 1;
 
-
-  $("time").textContent =
+  $("time")
+    .textContent =
     Math.max(
       0,
       Math.ceil(
@@ -581,140 +482,297 @@ function renderGame() {
   const alivePlayers =
     (state.players || [])
       .filter(
-        (player) => player.alive
+        (player) =>
+          player.alive
       );
 
-
-  $("alive").textContent =
+  $("alive")
+    .textContent =
     alivePlayers.length;
 
 
-  const entities =
-    $("entities");
+  const me =
+    state.players?.find(
+      (player) =>
+        player.id === myId
+    );
 
-  entities.innerHTML = "";
+
+  $("gameStatus")
+    .textContent =
+    me?.alive === false
+      ? "ELIMINATED"
+      : "SURVIVE";
 
 
   const arena =
     $("arena");
 
-  const arenaSize =
-    arena.getBoundingClientRect().width;
+  const entities =
+    $("entities");
+
+  if (!arena || !entities) {
+    return;
+  }
 
 
-  /* ================================
-     HAZARDS
-     ================================ */
+  entities.innerHTML = "";
 
-  (state.hazards || [])
-    .forEach((hazard) => {
+
+  const size =
+    arena.getBoundingClientRect()
+      .width;
+
+
+  /*
+    HAZARDS
+  */
+
+  (
+    state.hazards || []
+  ).forEach(
+    (hazard) => {
 
       const element =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       element.className =
-        `entity hazard ${hazard.type}`;
-
+        "entity hazard " +
+        hazard.type;
 
       element.style.left =
-        `${(hazard.x / 100) * arenaSize}px`;
-
+        (
+          hazard.x / 100
+        ) *
+        size +
+        "px";
 
       element.style.top =
-        `${(hazard.y / 100) * arenaSize}px`;
-
+        (
+          hazard.y / 100
+        ) *
+        size +
+        "px";
 
       entities.appendChild(
         element
       );
+    }
+  );
 
-    });
 
+  /*
+    PLAYERS
+  */
 
-  /* ================================
-     PLAYERS
-     ================================ */
-
-  (state.players || [])
-    .forEach((player) => {
+  (
+    state.players || []
+  ).forEach(
+    (player) => {
 
       const element =
-        document.createElement("div");
-
+        document.createElement(
+          "div"
+        );
 
       element.className =
-        `entity playerDot ${
+        "entity playerDot " +
+        (
           player.id === myId
             ? ""
-            : "enemy"
-        }`;
+            : "enemy "
+        ) +
+        (
+          player.alive
+            ? ""
+            : "dead"
+        );
 
 
       element.style.left =
-        `${(player.x / 100) * arenaSize}px`;
+        (
+          player.x / 100
+        ) *
+        size +
+        "px";
 
 
       element.style.top =
-        `${(player.y / 100) * arenaSize}px`;
+        (
+          player.y / 100
+        ) *
+        size +
+        "px";
 
 
-      if (!player.alive) {
+      const label =
+        document.createElement(
+          "span"
+        );
 
-        element.style.opacity = "0.18";
+      label.className =
+        "player-label";
 
-      }
-
-
-      element.title =
+      label.textContent =
         player.name;
 
 
+      element.appendChild(
+        label
+      );
+
+
       entities.appendChild(
         element
       );
-
-    });
-
+    }
+  );
 }
 
 
-/* =========================================
-   MOVEMENT
-   ========================================= */
+function runCountdown() {
 
-function sendMovement(dx, dy) {
+  const countdown =
+    $("countdown");
 
-  if (!socket) {
-    return;
-  }
+  let number = 3;
 
-  if (!socket.connected) {
-    return;
-  }
+  countdown.textContent =
+    number;
 
-  if (!room) {
-    return;
-  }
 
-  if (dx === 0 && dy === 0) {
+  const timer =
+    setInterval(
+      () => {
+
+        number--;
+
+        if (number > 0) {
+
+          countdown.textContent =
+            number;
+
+        } else {
+
+          countdown.textContent =
+            "GO";
+
+          setTimeout(
+            () => {
+              countdown.textContent =
+                "";
+            },
+            350
+          );
+
+          clearInterval(
+            timer
+          );
+        }
+
+      },
+      500
+    );
+}
+
+
+/* RESULT */
+
+function renderResult() {
+
+  showScreen(
+    "result"
+  );
+
+
+  const alivePlayers =
+    (
+      state.players || []
+    ).filter(
+      (player) =>
+        player.alive
+    );
+
+
+  $("winner")
+    .textContent =
+    state.winner ||
+    (
+      alivePlayers[0]?.name ||
+      "NO ONE"
+    );
+
+
+  $("scores")
+    .innerHTML =
+    (
+      state.players || []
+    )
+      .map(
+        (player) => {
+
+          return `
+            <div
+              class="score
+              ${player.alive
+                ? "alive"
+                : "out"}"
+            >
+
+              <span>
+                ${escapeHTML(
+                  player.name
+                )}
+              </span>
+
+              <b>
+                ${
+                  player.alive
+                    ? "ALIVE"
+                    : "OUT"
+                }
+              </b>
+
+            </div>
+          `;
+        }
+      )
+      .join("");
+
+
+  $("rematchBtn")
+    .disabled =
+    !isHost;
+}
+
+
+/* MOVEMENT */
+
+function move(
+  dx,
+  dy
+) {
+
+  if (
+    !socket?.connected ||
+    !room ||
+    (!dx && !dy)
+  ) {
     return;
   }
 
   socket.emit(
     "move",
     {
-      room: room,
-      dx: dx,
-      dy: dy
+      room,
+      dx,
+      dy
     }
   );
-
 }
 
-
-/* =========================================
-   KEYBOARD DOWN
-   ========================================= */
 
 window.addEventListener(
   "keydown",
@@ -736,9 +794,7 @@ window.addEventListener(
         "arrowright"
       ].includes(key)
     ) {
-
       event.preventDefault();
-
     }
 
 
@@ -746,9 +802,7 @@ window.addEventListener(
       key === "w" ||
       key === "arrowup"
     ) {
-
       keys.up = true;
-
     }
 
 
@@ -756,9 +810,7 @@ window.addEventListener(
       key === "s" ||
       key === "arrowdown"
     ) {
-
       keys.down = true;
-
     }
 
 
@@ -766,9 +818,7 @@ window.addEventListener(
       key === "a" ||
       key === "arrowleft"
     ) {
-
       keys.left = true;
-
     }
 
 
@@ -776,18 +826,12 @@ window.addEventListener(
       key === "d" ||
       key === "arrowright"
     ) {
-
       keys.right = true;
-
     }
 
   }
 );
 
-
-/* =========================================
-   KEYBOARD UP
-   ========================================= */
 
 window.addEventListener(
   "keyup",
@@ -801,9 +845,7 @@ window.addEventListener(
       key === "w" ||
       key === "arrowup"
     ) {
-
       keys.up = false;
-
     }
 
 
@@ -811,9 +853,7 @@ window.addEventListener(
       key === "s" ||
       key === "arrowdown"
     ) {
-
       keys.down = false;
-
     }
 
 
@@ -821,9 +861,7 @@ window.addEventListener(
       key === "a" ||
       key === "arrowleft"
     ) {
-
       keys.left = false;
-
     }
 
 
@@ -831,65 +869,57 @@ window.addEventListener(
       key === "d" ||
       key === "arrowright"
     ) {
-
       keys.right = false;
-
     }
 
   }
 );
 
 
-/* =========================================
-   MOVEMENT LOOP
-   ========================================= */
+/*
+  Send movement
+  every 70ms
+*/
 
-setInterval(() => {
+setInterval(
+  () => {
 
-  if (
-    !$("game")
-      .classList
-      .contains("active")
-  ) {
-
-    return;
-
-  }
-
-
-  const dx =
-    (keys.right ? 1 : 0) -
-    (keys.left ? 1 : 0);
+    if (
+      !$("game")
+        .classList
+        .contains("active")
+    ) {
+      return;
+    }
 
 
-  const dy =
-    (keys.down ? 1 : 0) -
-    (keys.up ? 1 : 0);
+    const dx =
+      (keys.right ? 1 : 0) -
+      (keys.left ? 1 : 0);
+
+    const dy =
+      (keys.down ? 1 : 0) -
+      (keys.up ? 1 : 0);
 
 
-  sendMovement(
-    dx,
-    dy
-  );
+    move(
+      dx,
+      dy
+    );
 
-}, 70);
+  },
+  70
+);
 
 
-/* =========================================
-   COPY ROOM
-   ========================================= */
+/* BUTTONS */
 
-async function copyRoomCode() {
-
-  if (!room) {
-    return;
-  }
+async function copyRoom() {
 
   try {
 
-    await navigator.clipboard.writeText(
-      room
-    );
+    await navigator.clipboard
+      .writeText(room);
 
     toast(
       "ROOM CODE COPIED"
@@ -900,209 +930,122 @@ async function copyRoomCode() {
     toast(room);
 
   }
-
 }
 
 
-/* =========================================
-   LEAVE ROOM
-   ========================================= */
+function leave() {
 
-function leaveRoom() {
-
-  if (socket && room) {
+  if (
+    socket &&
+    room
+  ) {
 
     socket.emit(
       "leave-room",
       {
-        room: room
+        room
       }
     );
-
   }
 
+
   room = "";
+
   isHost = false;
 
-  showScreen("home");
-
+  showScreen(
+    "home"
+  );
 }
 
-
-/* =========================================
-   REMATCH
-   ========================================= */
 
 function rematch() {
 
-  if (!socket) {
-    return;
-  }
+  if (
+    isHost &&
+    room
+  ) {
 
-  if (!isHost) {
-
-    toast(
-      "Only the host can start rematch"
+    socket.emit(
+      "rematch",
+      {
+        room
+      }
     );
 
-    return;
+  } else {
 
+    toast(
+      "ONLY HOST CAN REMATCH"
+    );
   }
+}
 
-  socket.emit(
-    "rematch",
-    {
-      room: room
+
+/* EVENTS */
+
+$("createBtn")
+  .onclick =
+  createRoom;
+
+$("joinBtn")
+  .onclick =
+  joinRoom;
+
+$("startBtn")
+  .onclick =
+  startGame;
+
+$("copyBtn")
+  .onclick =
+  copyRoom;
+
+$("leaveBtn")
+  .onclick =
+  leave;
+
+$("gameLeave")
+  .onclick =
+  leave;
+
+$("rematchBtn")
+  .onclick =
+  rematch;
+
+$("menuBtn")
+  .onclick =
+  leave;
+
+
+$("roomInput")
+  .addEventListener(
+    "input",
+    (event) => {
+
+      event.target.value =
+        clean(
+          event.target.value
+        );
     }
   );
 
-}
 
+$("nameInput")
+  .addEventListener(
+    "keydown",
+    (event) => {
 
-/* =========================================
-   RESULT SCREEN
-   ========================================= */
+      if (
+        event.key === "Enter"
+      ) {
+        createRoom();
+      }
 
-function renderResult() {
+    }
+  );
 
-  showScreen("result");
-
-
-  const alivePlayers =
-    (state.players || [])
-      .filter(
-        (player) => player.alive
-      );
-
-
-  let winner =
-    state.winner;
-
-
-  if (!winner) {
-
-    winner =
-      alivePlayers.length === 1
-        ? alivePlayers[0].name
-        : "NO WINNER";
-
-  }
-
-
-  $("winner").textContent =
-    winner;
-
-
-  $("scores").innerHTML =
-    (state.players || [])
-      .map((player) => {
-
-        return `
-          <div class="score">
-
-            <span>
-              ${escapeHTML(
-                player.name
-              )}
-            </span>
-
-            <b>
-              ${
-                player.alive
-                  ? "ALIVE"
-                  : "OUT"
-              }
-            </b>
-
-          </div>
-        `;
-
-      })
-      .join("");
-
-
-  $("rematchBtn").disabled =
-    !isHost;
-
-}
-
-
-/* =========================================
-   BUTTON EVENTS
-   ========================================= */
-
-$("createBtn").addEventListener(
-  "click",
-  createRoom
-);
-
-
-$("joinBtn").addEventListener(
-  "click",
-  joinRoom
-);
-
-
-$("startBtn").addEventListener(
-  "click",
-  startGame
-);
-
-
-$("copyBtn").addEventListener(
-  "click",
-  copyRoomCode
-);
-
-
-$("leaveBtn").addEventListener(
-  "click",
-  leaveRoom
-);
-
-
-$("gameLeave").addEventListener(
-  "click",
-  leaveRoom
-);
-
-
-$("rematchBtn").addEventListener(
-  "click",
-  rematch
-);
-
-
-$("menuBtn").addEventListener(
-  "click",
-  leaveRoom
-);
-
-
-$("roomInput").addEventListener(
-  "input",
-  (event) => {
-
-    event.target.value =
-      cleanRoomCode(
-        event.target.value
-      );
-
-  }
-);
-
-
-/* =========================================
-   INITIAL STATE
-   ========================================= */
-
-showScreen("home");
 
 console.log(
-  "LAST//ALIVE client loaded"
-);
-
-console.log(
-  "Server:",
+  "LAST//ALIVE CLIENT READY",
   SERVER_URL
 );
