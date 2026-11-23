@@ -1,106 +1,67 @@
-/* =========================================================
-   LAST//ALIVE
-   DISTRICT 09
-   CLEAN STANDALONE THREE.JS VERSION
-   NO GLB / NO EXTERNAL MAP REQUIRED
-   ========================================================= */
-
 "use strict";
 
-/* ---------------------------------------------------------
-   DOM
---------------------------------------------------------- */
+/* =========================================================
+   LAST//ALIVE — DISTRICT 09
+   CLEAN SINGLE PLAYER BUILD
+   ========================================================= */
 
-const $ = (id) => document.getElementById(id);
+const $ = id => document.getElementById(id);
 
-/* ---------------------------------------------------------
-   THREE
---------------------------------------------------------- */
+let scene;
+let camera;
+let renderer;
+let clock;
 
-let scene = null;
-let camera = null;
-let renderer = null;
-let clock = null;
-
-/* ---------------------------------------------------------
-   GAME STATE
---------------------------------------------------------- */
+let player;
+let playerGun;
 
 let running = false;
 let gameEnded = false;
 
-let player = null;
-let playerGun = null;
-
 let yaw = 0;
-let pitch = -0.12;
+let pitch = -0.15;
 
 let cameraMode = 3;
+
+const keys = {};
+const bullets = [];
+const enemies = [];
+const buildings = [];
+const trees = [];
+const particles = [];
+
+let mobileMoveX = 0;
+let mobileMoveY = 0;
+let mobileSprint = false;
+let mobileFire = false;
 
 let health = 100;
 let armor = 100;
 let kills = 0;
-let aliveCount = 12;
 let medkits = 2;
 
-let jumpVelocity = 0;
+let zoneRadius = 170;
+let zoneShrinkTimer = 0;
+
 let onGround = true;
+let jumpVelocity = 0;
+
 let crouching = false;
 
+let currentWeapon = 0;
 let lastShot = 0;
 let reloading = false;
 
-let zoneRadius = 175;
-let zoneTimer = 0;
-
-let muzzleTimer = 0;
-
-/* ---------------------------------------------------------
-   INPUT
---------------------------------------------------------- */
-
-const keys = {};
-
-const mobile = {
-    moveX: 0,
-    moveY: 0,
-    aiming: false,
-    fire: false,
-    sprint: false
-};
-
-let touchLookActive = false;
-let touchLookX = 0;
-let touchLookY = 0;
-
-/* ---------------------------------------------------------
-   OBJECTS
---------------------------------------------------------- */
-
-const enemies = [];
-const bullets = [];
-const pickups = [];
-const buildings = [];
-const trees = [];
-const streetLights = [];
-
-let zoneMesh = null;
-let zoneWall = null;
-
-/* ---------------------------------------------------------
-   WEAPONS
---------------------------------------------------------- */
-
 const weapons = [
+
     {
         name: "AR-01",
-        damage: 28,
+        damage: 30,
         fireRate: 120,
         mag: 30,
         ammo: 30,
         reserve: 150,
-        spread: 0.018,
-        pellets: 1
+        spread: 0.018
     },
 
     {
@@ -110,162 +71,138 @@ const weapons = [
         mag: 40,
         ammo: 40,
         reserve: 200,
-        spread: 0.035,
-        pellets: 1
+        spread: 0.035
     },
 
     {
         name: "M12",
-        damage: 14,
-        fireRate: 620,
+        damage: 16,
+        fireRate: 600,
         mag: 6,
         ammo: 6,
         reserve: 48,
-        spread: 0.105,
+        spread: 0.11,
         pellets: 8
     }
 ];
 
-let currentWeapon = 0;
+/* =========================================================
+   START
+   ========================================================= */
 
-/* ---------------------------------------------------------
-   START GAME
---------------------------------------------------------- */
+window.startGame = function(){
 
-window.startGame = function startGame() {
+    const nameInput = $("name");
 
-    const input = $("name");
-    const name = input ? input.value.trim() : "PLAYER";
-
-    if (!name) {
-        if (input) {
-            input.focus();
-            input.placeholder = "ENTER PLAYER NAME";
-        }
+    if(!nameInput){
         return;
     }
 
-    if (typeof THREE === "undefined") {
-        showGameError("THREE.JS LOAD NAHI HUA.");
+    const name = nameInput.value.trim();
+
+    if(!name){
+
+        nameInput.focus();
+        nameInput.placeholder = "ENTER PLAYER NAME";
         return;
     }
 
-    try {
+    if(typeof THREE === "undefined"){
 
-        if ($("start")) {
-            $("start").style.display = "none";
-        }
+        alert(
+            "Three.js load nahi hua.\n\n" +
+            "Internet connection check karo."
+        );
 
-        if ($("hud")) {
-            $("hud").style.display = "block";
-        }
+        return;
+    }
 
-        createGame();
+    $("start").style.display = "none";
+    $("hud").style.display = "block";
+
+    try{
+
+        initGame();
 
         running = true;
         gameEnded = false;
 
-        if (clock) {
-            clock.start();
-        }
+        clock.start();
 
         updateHUD();
 
         requestAnimationFrame(gameLoop);
 
         setTimeout(() => {
-            if (
-                renderer &&
-                renderer.domElement &&
-                window.innerWidth > 700
-            ) {
-                renderer.domElement.requestPointerLock?.();
-            }
-        }, 250);
 
-    } catch (error) {
+            if(renderer){
+
+                renderer.domElement
+                    .requestPointerLock?.();
+
+            }
+
+        },300);
+
+    }catch(error){
 
         console.error(error);
 
-        showGameError(
-            "GAME ERROR: " + error.message
+        alert(
+            "GAME ERROR:\n\n" +
+            error.message
         );
+
+        location.reload();
     }
 };
 
-/* ---------------------------------------------------------
-   ERROR
---------------------------------------------------------- */
+/* =========================================================
+   INIT
+   ========================================================= */
 
-function showGameError(message) {
-
-    console.error(message);
-
-    if ($("loading")) {
-        $("loading").style.display = "none";
-    }
-
-    if ($("error")) {
-        $("error").style.display = "block";
-        $("error").textContent = message;
-    }
-
-    if ($("enter")) {
-        $("enter").disabled = false;
-        $("enter").textContent = "TRY AGAIN →";
-    }
-}
-
-/* ---------------------------------------------------------
-   CREATE GAME
---------------------------------------------------------- */
-
-function createGame() {
-
-    /* Remove previous renderer */
-
-    if (renderer && renderer.domElement) {
-        renderer.domElement.remove();
-    }
-
-    /* Scene */
+function initGame(){
 
     scene = new THREE.Scene();
 
-    scene.background = new THREE.Color(0x91aeb4);
+    scene.background =
+        new THREE.Color(0x8ba6ad);
 
-    scene.fog = new THREE.Fog(
-        0x91aeb4,
-        90,
-        650
-    );
+    scene.fog =
+        new THREE.Fog(
+            0x8ba6ad,
+            160,
+            650
+        );
 
-    /* Camera */
+    camera =
+        new THREE.PerspectiveCamera(
+            67,
+            innerWidth / innerHeight,
+            0.1,
+            900
+        );
 
-    camera = new THREE.PerspectiveCamera(
-        68,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-    );
-
-    /* Renderer */
-
-    renderer = new THREE.WebGLRenderer({
-        antialias: true,
-        powerPreference: "high-performance"
-    });
+    renderer =
+        new THREE.WebGLRenderer({
+            antialias:true,
+            powerPreference:"high-performance"
+        });
 
     renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
+        innerWidth,
+        innerHeight
     );
 
     renderer.setPixelRatio(
-        Math.min(window.devicePixelRatio || 1, 1.5)
+        Math.min(
+            window.devicePixelRatio || 1,
+            1.5
+        )
     );
 
     renderer.shadowMap.enabled = true;
+
     renderer.shadowMap.type =
         THREE.PCFSoftShadowMap;
 
@@ -275,78 +212,60 @@ function createGame() {
     renderer.toneMapping =
         THREE.ACESFilmicToneMapping;
 
-    renderer.toneMappingExposure = 1.1;
+    renderer.toneMappingExposure = 1.15;
 
-    renderer.domElement.id = "gameCanvas";
+    document.body.appendChild(renderer.domElement);
 
-    document.body.appendChild(
-        renderer.domElement
-    );
+    clock =
+        new THREE.Clock();
 
-    clock = new THREE.Clock();
-
-    /* World */
-
-    createLighting();
+    setupLighting();
     createSky();
-    createGround();
+    createWorld();
     createRoads();
     createCity();
-    createIndustrialArea();
-    createPark();
-    createHarbor();
-    createProps();
+    createSuburbs();
+    createForest();
+    createWater();
     createZone();
-    createPickups();
-
-    /* Player */
 
     createPlayer();
 
-    /* Enemies */
-
     createEnemies();
 
-    /* Controls */
+    createLoot();
 
     setupKeyboard();
     setupMouse();
     setupMobile();
 
-    /* Resize */
-
-    window.addEventListener(
-        "resize",
-        resizeGame
-    );
-
-    updateHUD();
+    resizeGame();
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    LIGHTING
---------------------------------------------------------- */
+   ========================================================= */
 
-function createLighting() {
+function setupLighting(){
 
     const hemi =
         new THREE.HemisphereLight(
-            0xccefff,
-            0x25382c,
-            2.4
+            0xd8f3ff,
+            0x29372b,
+            2.2
         );
 
     scene.add(hemi);
 
     const sun =
         new THREE.DirectionalLight(
-            0xfff2d0,
-            4
+            0xffedc5,
+            3.5
         );
 
     sun.position.set(
-        -160,
-        250,
+        -150,
+        240,
         120
     );
 
@@ -365,313 +284,303 @@ function createLighting() {
 
     scene.add(sun);
 
-    const fill =
+    const rim =
         new THREE.DirectionalLight(
-            0x7bb9ff,
-            0.6
+            0x76bfff,
+            0.65
         );
 
-    fill.position.set(
-        160,
+    rim.position.set(
+        180,
         100,
-        -100
+        -180
     );
 
-    scene.add(fill);
+    scene.add(rim);
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    SKY
---------------------------------------------------------- */
+   ========================================================= */
 
-function createSky() {
+function createSky(){
 
     const sky =
         new THREE.Mesh(
             new THREE.SphereGeometry(
-                600,
+                500,
                 32,
-                16
+                20
             ),
             new THREE.MeshBasicMaterial({
-                color: 0x8faeb8,
-                side: THREE.BackSide
+                color:0x86aeb9,
+                side:THREE.BackSide
             })
         );
 
     scene.add(sky);
 
-    /* Sun */
+    for(let i=0;i<12;i++){
 
-    const sun =
+        const cloud =
+            new THREE.Group();
+
+        for(let j=0;j<5;j++){
+
+            const puff =
+                new THREE.Mesh(
+                    new THREE.SphereGeometry(
+                        8 + Math.random()*7,
+                        10,
+                        8
+                    ),
+                    new THREE.MeshStandardMaterial({
+                        color:0xffffff,
+                        transparent:true,
+                        opacity:.28
+                    })
+                );
+
+            puff.position.set(
+                j*10,
+                Math.random()*4,
+                Math.random()*5
+            );
+
+            cloud.add(puff);
+        }
+
+        cloud.position.set(
+            -250 + Math.random()*500,
+            100 + Math.random()*60,
+            -250 + Math.random()*500
+        );
+
+        scene.add(cloud);
+    }
+}
+
+/* =========================================================
+   WORLD
+   ========================================================= */
+
+function createWorld(){
+
+    const ground =
         new THREE.Mesh(
-            new THREE.SphereGeometry(
-                18,
-                24,
-                16
+            new THREE.PlaneGeometry(
+                560,
+                480,
+                1,
+                1
             ),
-            new THREE.MeshBasicMaterial({
-                color: 0xffe7a0
+            new THREE.MeshStandardMaterial({
+                color:0x536c43,
+                roughness:1
             })
         );
 
-    sun.position.set(
-        -250,
-        240,
-        -300
-    );
+    ground.rotation.x =
+        -Math.PI/2;
 
-    scene.add(sun);
+    ground.receiveShadow = true;
+
+    scene.add(ground);
+
+    /*
+      Large central plaza
+    */
+
+    const plaza =
+        new THREE.Mesh(
+            new THREE.CircleGeometry(
+                78,
+                64
+            ),
+            new THREE.MeshStandardMaterial({
+                color:0x606665,
+                roughness:.95
+            })
+        );
+
+    plaza.rotation.x =
+        -Math.PI/2;
+
+    plaza.position.y = .05;
+
+    scene.add(plaza);
+
+    /*
+      District patches
+    */
+
+    const patches = [
+        [-180,-110,80,0x69734e],
+        [180,-100,90,0x68794f],
+        [-180,110,90,0x4e6844],
+        [180,120,100,0x5b7146]
+    ];
+
+    for(const p of patches){
+
+        const mesh =
+            new THREE.Mesh(
+                new THREE.CircleGeometry(
+                    p[2],
+                    32
+                ),
+                new THREE.MeshStandardMaterial({
+                    color:p[3],
+                    roughness:1
+                })
+            );
+
+        mesh.rotation.x =
+            -Math.PI/2;
+
+        mesh.position.set(
+            p[0],
+            .06,
+            p[1]
+        );
+
+        scene.add(mesh);
+    }
 }
 
-/* ---------------------------------------------------------
-   GROUND
---------------------------------------------------------- */
+/* =========================================================
+   WATER
+   ========================================================= */
 
-function createGround() {
-
-    /* Water */
+function createWater(){
 
     const water =
         new THREE.Mesh(
             new THREE.PlaneGeometry(
-                900,
-                900
+                1000,
+                1000
             ),
             new THREE.MeshStandardMaterial({
-                color: 0x1d6872,
-                roughness: 0.22,
-                metalness: 0.18
+                color:0x1e6977,
+                roughness:.25,
+                metalness:.25
             })
         );
 
     water.rotation.x =
-        -Math.PI / 2;
+        -Math.PI/2;
 
-    water.position.y = -1;
+    water.position.y = -1.5;
 
     scene.add(water);
-
-    /* Main terrain */
-
-    const terrain =
-        new THREE.Mesh(
-            new THREE.CircleGeometry(
-                280,
-                96
-            ),
-            new THREE.MeshStandardMaterial({
-                color: 0x526c46,
-                roughness: 1
-            })
-        );
-
-    terrain.rotation.x =
-        -Math.PI / 2;
-
-    terrain.position.y = 0;
-
-    terrain.scale.set(
-        1,
-        0.82,
-        1
-    );
-
-    terrain.receiveShadow = true;
-
-    scene.add(terrain);
-
-    /* Sand ring */
-
-    const sand =
-        new THREE.Mesh(
-            new THREE.RingGeometry(
-                240,
-                280,
-                96
-            ),
-            new THREE.MeshStandardMaterial({
-                color: 0xcdb982,
-                roughness: 1
-            })
-        );
-
-    sand.rotation.x =
-        -Math.PI / 2;
-
-    sand.position.y = 0.15;
-
-    scene.add(sand);
-
-    /* Grass patches */
-
-    for (let i = 0; i < 100; i++) {
-
-        const a =
-            Math.random() *
-            Math.PI * 2;
-
-        const r =
-            20 +
-            Math.random() *
-            210;
-
-        const x =
-            Math.cos(a) * r;
-
-        const z =
-            Math.sin(a) * r * 0.82;
-
-        const patch =
-            new THREE.Mesh(
-                new THREE.CircleGeometry(
-                    4 +
-                    Math.random() * 12,
-                    12
-                ),
-                new THREE.MeshStandardMaterial({
-                    color:
-                        Math.random() > 0.5
-                            ? 0x5c7949
-                            : 0x46643b
-                })
-            );
-
-        patch.rotation.x =
-            -Math.PI / 2;
-
-        patch.position.set(
-            x,
-            0.22,
-            z
-        );
-
-        scene.add(patch);
-    }
 }
 
-/* ---------------------------------------------------------
-   ROAD
---------------------------------------------------------- */
+/* =========================================================
+   ROADS
+   ========================================================= */
 
-function makeRoad(
+function road(
     x,
     z,
     width,
     length,
-    rotation = 0
-) {
+    rotation=0
+){
 
-    const road =
+    const mesh =
         new THREE.Mesh(
             new THREE.BoxGeometry(
                 width,
-                0.3,
+                .18,
                 length
             ),
             new THREE.MeshStandardMaterial({
-                color: 0x252a2b,
-                roughness: 0.95
+                color:0x252b2c,
+                roughness:.9
             })
         );
 
-    road.position.set(
+    mesh.position.set(
         x,
-        0.45,
+        .12,
         z
     );
 
-    road.rotation.y =
+    mesh.rotation.y =
         rotation;
 
-    road.receiveShadow = true;
+    mesh.receiveShadow = true;
 
-    scene.add(road);
+    scene.add(mesh);
 
-    /* road lines */
+    /*
+      road markings
+    */
 
-    for (
-        let i = -length / 2 + 8;
-        i < length / 2;
-        i += 18
-    ) {
+    const marks =
+        Math.floor(length/15);
 
-        const line =
+    for(let i=0;i<marks;i++){
+
+        const mark =
             new THREE.Mesh(
                 new THREE.BoxGeometry(
-                    0.5,
-                    0.08,
+                    .55,
+                    .04,
                     7
                 ),
                 new THREE.MeshBasicMaterial({
-                    color: 0xd8bd57
+                    color:0xe0bd50
                 })
             );
 
-        line.position.set(
+        mark.position.set(
             x,
-            0.65,
-            z + i
+            .24,
+            z-length/2+8+i*15
         );
 
-        line.rotation.y =
+        mark.rotation.y =
             rotation;
 
-        scene.add(line);
+        scene.add(mark);
     }
 }
 
-function createRoads() {
+function createRoads(){
 
-    makeRoad(
-        0,
-        0,
-        14,
-        470
-    );
+    road(0,0,18,430,0);
 
-    makeRoad(
-        0,
-        0,
-        14,
-        470,
-        Math.PI / 2
-    );
+    road(0,0,18,430,Math.PI/2);
 
-    makeRoad(
+    road(-115,0,14,280,0);
+
+    road(115,0,14,280,0);
+
+    road(0,-100,14,250,Math.PI/2);
+
+    road(0,100,14,250,Math.PI/2);
+
+    road(
+        -120,
         -105,
-        20,
-        11,
-        280,
-        Math.PI / 2
+        12,
+        190,
+        -.55
     );
 
-    makeRoad(
+    road(
+        120,
         105,
-        -20,
-        11,
-        280,
-        Math.PI / 2
-    );
-
-    makeRoad(
-        0,
-        -95,
-        11,
-        280
-    );
-
-    makeRoad(
-        0,
-        95,
-        11,
-        280
+        12,
+        190,
+        -.55
     );
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    BUILDINGS
---------------------------------------------------------- */
+   ========================================================= */
 
 function createBuilding(
     x,
@@ -680,17 +589,16 @@ function createBuilding(
     h,
     d,
     color
-) {
+){
 
     const group =
         new THREE.Group();
 
     const material =
         new THREE.MeshStandardMaterial({
-            color:
-                color ||
-                0x596268,
-            roughness: 0.72
+            color,
+            roughness:.78,
+            metalness:.08
         });
 
     const body =
@@ -704,95 +612,84 @@ function createBuilding(
         );
 
     body.position.y =
-        h / 2 + 0.5;
+        h/2;
 
     body.castShadow = true;
     body.receiveShadow = true;
 
     group.add(body);
 
-    /* roof */
+    /*
+      Roof
+    */
 
     const roof =
         new THREE.Mesh(
-            new THREE.BoxGeometry(
-                w + 1,
-                0.7,
-                d + 1
+            new THREE.ConeGeometry(
+                Math.max(w,d)*.72,
+                4,
+                4
             ),
             new THREE.MeshStandardMaterial({
-                color: 0x303638
+                color:0x303638,
+                roughness:.8
             })
         );
 
+    roof.scale.z = .8;
+
+    roof.rotation.y =
+        Math.PI/4;
+
     roof.position.y =
-        h + 0.85;
+        h+.9;
 
     roof.castShadow = true;
 
     group.add(roof);
 
-    /* windows */
+    /*
+      Windows
+    */
 
-    const windowMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0x9bdce1,
-            emissive: 0x214e54,
-            emissiveIntensity: 0.7
+    const windowMat =
+        new THREE.MeshBasicMaterial({
+            color:0xb8e9e7
         });
 
     const cols =
         Math.max(
             2,
-            Math.floor(w / 6)
+            Math.floor(w/6)
         );
 
     const rows =
         Math.max(
             2,
-            Math.floor(h / 6)
+            Math.floor(h/7)
         );
 
-    for (
-        let row = 0;
-        row < rows;
-        row++
-    ) {
+    for(let r=0;r<rows;r++){
 
-        for (
-            let col = 0;
-            col < cols;
-            col++
-        ) {
+        for(let c=0;c<cols;c++){
 
             const win =
                 new THREE.Mesh(
                     new THREE.BoxGeometry(
                         2.2,
-                        2,
-                        0.12
+                        2.2,
+                        .08
                     ),
-                    windowMaterial
+                    windowMat
                 );
 
             win.position.set(
-                -w / 2 +
-                    3.5 +
-                    col * 6,
-                5 +
-                    row * 6,
-                d / 2 + 0.08
+                -w/2+3+c*6,
+                4+r*7,
+                d/2+.05
             );
 
             group.add(win);
-
-            const back =
-                win.clone();
-
-            back.position.z =
-                -d / 2 - 0.08;
-
-            group.add(back);
         }
     }
 
@@ -804,283 +701,127 @@ function createBuilding(
 
     scene.add(group);
 
-    buildings.push(group);
-
-    return group;
+    buildings.push({
+        mesh:group,
+        x,
+        z,
+        w,
+        d,
+        h
+    });
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    CITY
---------------------------------------------------------- */
+   ========================================================= */
 
-function createCity() {
+function createCity(){
 
-    const positions = [
+    const blocks = [
 
-        [-80, -55],
-        [-45, -55],
-        [0, -55],
-        [45, -55],
-        [80, -55],
+        [-62,-62,18,24,18],
+        [-25,-62,25,34,20],
+        [22,-62,20,26,20],
+        [65,-62,28,42,22],
 
-        [-80, -15],
-        [-45, -15],
-        [45, -15],
-        [80, -15],
+        [-62,-20,25,30,18],
+        [65,-20,22,34,20],
 
-        [-80, 30],
-        [-45, 30],
-        [45, 30],
-        [80, 30],
+        [-65,28,25,38,22],
+        [-25,32,20,26,20],
+        [25,30,28,48,22],
+        [70,30,20,32,18],
 
-        [-80, 70],
-        [-40, 70],
-        [0, 70],
-        [45, 70],
-        [85, 70]
+        [-62,70,25,30,20],
+        [-20,72,22,44,20],
+        [28,72,30,36,22],
+        [75,75,20,28,18]
     ];
 
-    for (
-        let i = 0;
-        i < positions.length;
-        i++
-    ) {
+    for(const b of blocks){
 
-        const p =
-            positions[i];
-
-        const colors = [
-            0x596167,
-            0x485257,
-            0x68706f,
-            0x514e4a,
-            0x5d6264
+        const colors=[
+            0x555d60,
+            0x60686b,
+            0x4d585c,
+            0x6b6860,
+            0x596265
         ];
 
         createBuilding(
-            p[0],
-            p[1],
-            16 + Math.random() * 10,
-            10 + Math.random() * 25,
-            15 + Math.random() * 10,
+            b[0],
+            b[1],
+            b[2],
+            b[3],
+            b[4],
             colors[
                 Math.floor(
-                    Math.random() *
-                    colors.length
+                    Math.random()*colors.length
                 )
             ]
         );
     }
 
-    /* Tall landmark */
+    /*
+      Central landmark
+    */
 
     createBuilding(
-        15,
-        -5,
-        28,
-        62,
-        28,
-        0x343e45
-    );
-
-    /* City plaza */
-
-    const plaza =
-        new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                30,
-                30,
-                0.4,
-                32
-            ),
-            new THREE.MeshStandardMaterial({
-                color: 0x727979
-            })
-        );
-
-    plaza.position.set(
         0,
-        0.55,
-        0
-    );
-
-    scene.add(plaza);
-
-    /* Center monument */
-
-    const monument =
-        new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                4,
-                5,
-                20,
-                12
-            ),
-            new THREE.MeshStandardMaterial({
-                color: 0x303638,
-                metalness: 0.7
-            })
-        );
-
-    monument.position.set(
         0,
-        10,
-        0
+        34,
+        65,
+        34,
+        0x354348
     );
-
-    monument.castShadow = true;
-
-    scene.add(monument);
 }
 
-/* ---------------------------------------------------------
-   INDUSTRIAL
---------------------------------------------------------- */
+/* =========================================================
+   SUBURBS
+   ========================================================= */
 
-function createIndustrialArea() {
+function createSuburbs(){
 
-    const baseX = 155;
-    const baseZ = -115;
+    const areas=[
+        [-190,-80],
+        [190,-80],
+        [-190,80],
+        [190,80]
+    ];
 
-    /* warehouses */
+    for(const area of areas){
 
-    for (
-        let i = 0;
-        i < 4;
-        i++
-    ) {
+        for(let i=0;i<10;i++){
 
-        createBuilding(
-            baseX +
-                (i % 2) * 48,
-            baseZ +
-                Math.floor(i / 2) * 55,
-            38,
-            13,
-            34,
-            0x4b5150
-        );
-    }
+            const x =
+                area[0] +
+                (Math.random()-.5)*75;
 
-    /* tanks */
+            const z =
+                area[1] +
+                (Math.random()-.5)*65;
 
-    for (
-        let i = 0;
-        i < 5;
-        i++
-    ) {
-
-        const tank =
-            new THREE.Mesh(
-                new THREE.CylinderGeometry(
-                    7,
-                    7,
-                    12,
-                    24
-                ),
-                new THREE.MeshStandardMaterial({
-                    color: 0x626b6b,
-                    metalness: 0.55,
-                    roughness: 0.35
-                })
+            createBuilding(
+                x,
+                z,
+                10+Math.random()*7,
+                6+Math.random()*8,
+                10+Math.random()*7,
+                0x817b68
             );
-
-        tank.position.set(
-            130 +
-                i * 16,
-            6.5,
-            -55
-        );
-
-        tank.castShadow = true;
-
-        scene.add(tank);
+        }
     }
-
-    /* radio tower */
-
-    const tower =
-        new THREE.Group();
-
-    for (
-        let i = 0;
-        i < 4;
-        i++
-    ) {
-
-        const leg =
-            new THREE.Mesh(
-                new THREE.CylinderGeometry(
-                    0.45,
-                    0.7,
-                    55,
-                    8
-                ),
-                new THREE.MeshStandardMaterial({
-                    color: 0x31383a,
-                    metalness: 0.7
-                })
-            );
-
-        const a =
-            i *
-            Math.PI /
-            2;
-
-        leg.position.set(
-            120 +
-                Math.cos(a) * 5,
-            27,
-            -40 +
-                Math.sin(a) * 5
-        );
-
-        tower.add(leg);
-    }
-
-    for (
-        let y = 10;
-        y < 52;
-        y += 10
-    ) {
-
-        const ring =
-            new THREE.Mesh(
-                new THREE.TorusGeometry(
-                    5,
-                    0.3,
-                    8,
-                    20
-                ),
-                new THREE.MeshStandardMaterial({
-                    color: 0x40484a
-                })
-            );
-
-        ring.rotation.x =
-            Math.PI / 2;
-
-        ring.position.set(
-            120,
-            y,
-            -40
-        );
-
-        tower.add(ring);
-    }
-
-    scene.add(tower);
 }
 
-/* ---------------------------------------------------------
-   PARK
---------------------------------------------------------- */
+/* =========================================================
+   TREES
+   ========================================================= */
 
 function createTree(
     x,
     z,
-    scale = 1
-) {
+    scale=1
+){
 
     const tree =
         new THREE.Group();
@@ -1088,45 +829,39 @@ function createTree(
     const trunk =
         new THREE.Mesh(
             new THREE.CylinderGeometry(
-                0.55,
-                0.8,
+                .6,
+                .9,
                 5,
                 8
             ),
             new THREE.MeshStandardMaterial({
-                color: 0x62472f
+                color:0x5d422d
             })
         );
 
-    trunk.position.y = 2.8;
+    trunk.position.y=2.5;
 
     tree.add(trunk);
 
-    for (
-        let i = 0;
-        i < 3;
-        i++
-    ) {
+    for(let i=0;i<3;i++){
 
         const crown =
             new THREE.Mesh(
                 new THREE.ConeGeometry(
-                    4.4 -
-                        i * 0.7,
-                    7,
+                    4-i*.7,
+                    6,
                     8
                 ),
                 new THREE.MeshStandardMaterial({
                     color:
-                        i === 0
-                            ? 0x245033
-                            : 0x326b3c
+                        i===0
+                        ?0x244f32
+                        :0x326a3d
                 })
             );
 
         crown.position.y =
-            6 +
-            i * 4;
+            6+i*3.5;
 
         crown.castShadow = true;
 
@@ -1139,449 +874,245 @@ function createTree(
         z
     );
 
-    tree.scale.setScalar(
-        scale
-    );
+    tree.scale.setScalar(scale);
 
     scene.add(tree);
 
     trees.push(tree);
 }
 
-function createPark() {
+function createForest(){
 
-    for (
-        let i = 0;
-        i < 75;
-        i++
-    ) {
+    for(let i=0;i<100;i++){
 
-        const x =
-            -175 +
-            Math.random() * 90;
+        let x;
+        let z;
 
-        const z =
-            -60 +
-            Math.random() * 150;
+        do{
+
+            x =
+                -245+
+                Math.random()*490;
+
+            z =
+                -195+
+                Math.random()*390;
+
+        }while(
+            Math.abs(x)<115 &&
+            Math.abs(z)<110
+        );
 
         createTree(
             x,
             z,
-            0.7 +
-                Math.random() *
-                0.6
+            .7+Math.random()*.8
         );
     }
 }
 
-/* ---------------------------------------------------------
-   HARBOR
---------------------------------------------------------- */
+/* =========================================================
+   ZONE
+   ========================================================= */
 
-function createHarbor() {
+let zoneMesh;
 
-    const dockMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0x735438
-        });
+function createZone(){
 
-    for (
-        let i = 0;
-        i < 6;
-        i++
-    ) {
-
-        const dock =
-            new THREE.Mesh(
-                new THREE.BoxGeometry(
-                    12,
-                    1,
-                    60
-                ),
-                dockMaterial
-            );
-
-        dock.position.set(
-            -190 +
-                i * 20,
-            0.8,
-            -30
-        );
-
-        scene.add(dock);
-    }
-
-    const colors = [
-        0x9d3d32,
-        0x315c78,
-        0x6e7133,
-        0x7d522f
-    ];
-
-    for (
-        let i = 0;
-        i < 24;
-        i++
-    ) {
-
-        const container =
-            new THREE.Mesh(
-                new THREE.BoxGeometry(
-                    8,
-                    4,
-                    3
-                ),
-                new THREE.MeshStandardMaterial({
-                    color:
-                        colors[
-                            i %
-                            colors.length
-                        ]
-                })
-            );
-
-        container.position.set(
-            -205 +
-                Math.random() *
-                50,
-            3 +
-                Math.floor(
-                    Math.random() *
-                    2
-                ) *
-                4,
-            -70 +
-                Math.random() *
-                70
-        );
-
-        container.rotation.y =
-            Math.random() >
-            0.5
-                ? 0
-                : Math.PI / 2;
-
-        container.castShadow = true;
-
-        scene.add(container);
-    }
-}
-
-/* ---------------------------------------------------------
-   PROPS
---------------------------------------------------------- */
-
-function createProps() {
-
-    /* Street lights */
-
-    for (
-        let i = -200;
-        i <= 200;
-        i += 40
-    ) {
-
-        createStreetLight(
-            i,
-            -8
-        );
-
-        createStreetLight(
-            i,
-            8
-        );
-    }
-
-    /* crates */
-
-    for (
-        let i = 0;
-        i < 35;
-        i++
-    ) {
-
-        const crate =
-            new THREE.Mesh(
-                new THREE.BoxGeometry(
-                    3,
-                    3,
-                    3
-                ),
-                new THREE.MeshStandardMaterial({
-                    color: 0x74552f
-                })
-            );
-
-        crate.position.set(
-            -150 +
-                Math.random() *
-                280,
-            1.6,
-            -160 +
-                Math.random() *
-                260
-        );
-
-        crate.rotation.y =
-            Math.random() *
-            Math.PI;
-
-        crate.castShadow = true;
-
-        scene.add(crate);
-    }
-}
-
-function createStreetLight(
-    x,
-    z
-) {
-
-    const group =
-        new THREE.Group();
-
-    const pole =
+    zoneMesh =
         new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                0.12,
-                0.16,
-                7,
-                8
-            ),
-            new THREE.MeshStandardMaterial({
-                color: 0x252b2d,
-                metalness: 0.7
-            })
-        );
-
-    pole.position.y = 3.5;
-
-    group.add(pole);
-
-    const lamp =
-        new THREE.Mesh(
-            new THREE.SphereGeometry(
-                0.45,
-                10,
-                8
+            new THREE.RingGeometry(
+                zoneRadius-1,
+                zoneRadius,
+                100
             ),
             new THREE.MeshBasicMaterial({
-                color: 0xffe5a0
+                color:0x59ffc0,
+                transparent:true,
+                opacity:.9,
+                side:THREE.DoubleSide
             })
         );
 
-    lamp.position.y = 7;
+    zoneMesh.rotation.x =
+        -Math.PI/2;
 
-    group.add(lamp);
+    zoneMesh.position.y=.5;
 
-    const light =
-        new THREE.PointLight(
-            0xffd98a,
-            1.1,
-            25
-        );
-
-    light.position.y = 7;
-
-    group.add(light);
-
-    group.position.set(
-        x,
-        0,
-        z
-    );
-
-    scene.add(group);
-
-    streetLights.push(group);
+    scene.add(zoneMesh);
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    PLAYER
---------------------------------------------------------- */
+   ========================================================= */
 
-function createPlayer() {
+function createPlayer(){
 
     player =
         new THREE.Group();
 
-    /* smaller character */
+    /*
+      smaller proportions
+    */
 
-    const dark =
+    const pants =
         new THREE.MeshStandardMaterial({
-            color: 0x20282d,
-            roughness: 0.7
+            color:0x1d2428
+        });
+
+    const shirt =
+        new THREE.MeshStandardMaterial({
+            color:0x33474a
         });
 
     const skin =
         new THREE.MeshStandardMaterial({
-            color: 0xc9906c,
-            roughness: 0.8
+            color:0xc88d69
         });
 
-    /* legs */
-
-    const leftLeg =
+    const leg1 =
         new THREE.Mesh(
             new THREE.BoxGeometry(
-                0.7,
-                2.8,
-                0.7
+                .75,
+                3,
+                .8
             ),
-            dark
+            pants
         );
 
-    leftLeg.position.set(
-        -0.42,
-        1.6,
+    leg1.position.set(
+        -.45,
+        1.5,
         0
     );
 
-    player.add(leftLeg);
+    player.add(leg1);
 
-    const rightLeg =
-        leftLeg.clone();
+    const leg2 =
+        leg1.clone();
 
-    rightLeg.position.x =
-        0.42;
+    leg2.position.x=.45;
 
-    player.add(rightLeg);
+    player.add(leg2);
 
-    /* torso */
-
-    const torso =
+    const body =
         new THREE.Mesh(
             new THREE.CapsuleGeometry(
-                1.05,
-                1.8,
+                1.25,
+                2,
                 5,
                 10
             ),
-            dark
+            shirt
         );
 
-    torso.position.y = 4.1;
+    body.position.y=4.4;
 
-    torso.castShadow = true;
+    body.castShadow=true;
 
-    player.add(torso);
-
-    /* vest */
+    player.add(body);
 
     const vest =
         new THREE.Mesh(
             new THREE.BoxGeometry(
-                2.1,
-                1.7,
-                1.45
+                2.4,
+                2,
+                1.7
             ),
             new THREE.MeshStandardMaterial({
-                color: 0x36434b,
-                roughness: 0.6
+                color:0x253035
             })
         );
 
-    vest.position.y = 4.25;
+    vest.position.y=4.5;
 
     player.add(vest);
-
-    /* head */
 
     const head =
         new THREE.Mesh(
             new THREE.SphereGeometry(
-                0.9,
-                20,
+                1,
+                18,
                 14
             ),
             skin
         );
 
-    head.position.y = 6.2;
+    head.position.y=6.7;
 
-    head.castShadow = true;
+    head.castShadow=true;
 
     player.add(head);
-
-    /* hair */
 
     const hair =
         new THREE.Mesh(
             new THREE.SphereGeometry(
-                0.94,
+                1.04,
                 16,
                 10
             ),
             new THREE.MeshStandardMaterial({
-                color: 0x202326
+                color:0x202326
             })
         );
 
-    hair.scale.y = 0.5;
+    hair.scale.y=.5;
 
-    hair.position.set(
-        0,
-        6.65,
-        -0.03
-    );
+    hair.position.y=7.3;
 
     player.add(hair);
-
-    /* gun */
 
     playerGun =
         createGun();
 
-    playerGun.scale.setScalar(
-        0.65
-    );
-
     playerGun.position.set(
-        0.95,
-        4.1,
-        -0.8
+        1.05,
+        4.4,
+        -1
     );
 
-    playerGun.rotation.y =
-        Math.PI;
+    player.add(playerGun);
 
-    player.add(
-        playerGun
-    );
+    player.userData.gun =
+        playerGun;
+
+    /*
+      Spawn central but safe
+    */
 
     player.position.set(
         0,
         0,
-        145
+        125
     );
 
     scene.add(player);
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    GUN
---------------------------------------------------------- */
+   ========================================================= */
 
-function createGun() {
+function createGun(){
 
     const gun =
         new THREE.Group();
 
-    const material =
+    const mat =
         new THREE.MeshStandardMaterial({
-            color: 0x14181b,
-            metalness: 0.75,
-            roughness: 0.25
+            color:0x111518,
+            metalness:.8,
+            roughness:.25
         });
 
     const body =
         new THREE.Mesh(
             new THREE.BoxGeometry(
-                0.45,
-                0.45,
-                2.5
+                .5,
+                .45,
+                2.7
             ),
-            material
+            mat
         );
 
     gun.add(body);
@@ -1589,69 +1120,67 @@ function createGun() {
     const barrel =
         new THREE.Mesh(
             new THREE.CylinderGeometry(
-                0.07,
-                0.07,
+                .09,
+                .09,
                 1.8,
                 8
             ),
-            material
+            mat
         );
 
     barrel.rotation.x =
-        Math.PI / 2;
+        Math.PI/2;
 
-    barrel.position.z =
-        -1.9;
+    barrel.position.z=-2;
 
     gun.add(barrel);
 
     const stock =
         new THREE.Mesh(
             new THREE.BoxGeometry(
-                0.48,
-                0.5,
-                0.8
+                .5,
+                .55,
+                .9
             ),
-            material
+            mat
         );
 
-    stock.position.z =
-        1.35;
+    stock.position.z=1.5;
 
     gun.add(stock);
 
     return gun;
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    ENEMIES
---------------------------------------------------------- */
+   ========================================================= */
 
-function createEnemies() {
+function createEnemies(){
 
     /*
-      IMPORTANT:
-      Enemies are now far away.
-      No instant face-to-face spawning.
+      FAR spawn positions
     */
 
-    const positions = [
-        [-175, -140],
-        [-100, -165],
-        [-20, -185],
-        [75, -165],
-        [170, -130],
-        [190, -40],
-        [175, 70],
-        [110, 155],
-        [0, 175],
-        [-100, 150],
-        [-175, 80]
+    const positions=[
+
+        [-190,-155],
+        [-80,-175],
+        [70,-170],
+        [190,-145],
+
+        [-215,-20],
+        [215,15],
+
+        [-200,130],
+        [-80,170],
+        [65,175],
+        [205,135]
+
     ];
 
     positions.forEach(
-        (pos, index) => {
-
+        (pos,index)=>{
             createEnemy(
                 pos[0],
                 pos[1],
@@ -1665,38 +1194,34 @@ function createEnemy(
     x,
     z,
     index
-) {
+){
 
     const enemy =
         new THREE.Group();
 
     const dark =
         new THREE.MeshStandardMaterial({
-            color: 0x171b1e,
-            roughness: 0.75
+            color:0x171b1e
         });
 
     const red =
         new THREE.MeshStandardMaterial({
-            color: 0x6c2727,
-            roughness: 0.7
+            color:0x702d2d
         });
-
-    /* legs */
 
     const leg =
         new THREE.Mesh(
             new THREE.BoxGeometry(
-                0.68,
-                2.8,
-                0.68
+                .7,
+                3,
+                .75
             ),
             dark
         );
 
     leg.position.set(
-        -0.4,
-        1.55,
+        -.43,
+        1.5,
         0
     );
 
@@ -1705,84 +1230,50 @@ function createEnemy(
     const leg2 =
         leg.clone();
 
-    leg2.position.x =
-        0.4;
+    leg2.position.x=.43;
 
     enemy.add(leg2);
-
-    /* body */
 
     const body =
         new THREE.Mesh(
             new THREE.CapsuleGeometry(
-                0.98,
-                1.7,
+                1.2,
+                2,
                 5,
                 10
             ),
             red
         );
 
-    body.position.y =
-        4.05;
-
-    body.castShadow = true;
+    body.position.y=4.3;
 
     enemy.add(body);
-
-    /* head */
 
     const head =
         new THREE.Mesh(
             new THREE.SphereGeometry(
-                0.85,
-                18,
+                .95,
+                16,
                 12
             ),
             new THREE.MeshStandardMaterial({
-                color: 0xc48a68
+                color:0xbf8766
             })
         );
 
-    head.position.y =
-        6.15;
+    head.position.y=6.5;
 
     enemy.add(head);
-
-    /* mask */
-
-    const mask =
-        new THREE.Mesh(
-            new THREE.SphereGeometry(
-                0.88,
-                18,
-                12,
-                0,
-                Math.PI * 2,
-                0,
-                Math.PI / 2
-            ),
-            dark
-        );
-
-    mask.position.y =
-        6.2;
-
-    enemy.add(mask);
-
-    /* weapon */
 
     const weapon =
         createGun();
 
-    weapon.scale.setScalar(
-        0.55
-    );
+    weapon.scale.setScalar(.7);
 
     weapon.position.set(
-        0.9,
-        4,
-        -0.8
+        1,
+        4.3,
+        -1
     );
 
     enemy.add(weapon);
@@ -1793,32 +1284,20 @@ function createEnemy(
         z
     );
 
-    enemy.userData = {
-
-        health: 100,
-
-        alive: true,
-
-        speed:
-            2.5 +
-            Math.random() * 1.5,
-
-        attackTimer:
-            Math.random() * 2,
-
-        seed:
-            Math.random() * 100,
-
+    enemy.userData={
+        alive:true,
+        health:100,
+        speed:2.1+Math.random()*1.2,
+        attackTimer:1+Math.random()*2,
+        seed:Math.random()*10,
         index
     };
 
     enemy.traverse(
-        (obj) => {
-
-            if (obj.isMesh) {
-                obj.castShadow = true;
+        object=>{
+            if(object.isMesh){
+                object.castShadow=true;
             }
-
         }
     );
 
@@ -1827,287 +1306,164 @@ function createEnemy(
     enemies.push(enemy);
 }
 
-/* ---------------------------------------------------------
-   ZONE
---------------------------------------------------------- */
+/* =========================================================
+   LOOT
+   ========================================================= */
 
-function createZone() {
+function createLoot(){
 
-    const geo =
-        new THREE.RingGeometry(
-            zoneRadius - 1,
-            zoneRadius,
-            96
-        );
-
-    const mat =
-        new THREE.MeshBasicMaterial({
-            color: 0x52ff9a,
-            transparent: true,
-            opacity: 0.8,
-            side: THREE.DoubleSide
-        });
-
-    zoneMesh =
-        new THREE.Mesh(
-            geo,
-            mat
-        );
-
-    zoneMesh.rotation.x =
-        -Math.PI / 2;
-
-    zoneMesh.position.y =
-        0.9;
-
-    scene.add(
-        zoneMesh
-    );
-
-    /* vertical wall */
-
-    zoneWall =
-        new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                1,
-                1,
-                20,
-                96,
-                1,
-                true
-            ),
-            new THREE.MeshBasicMaterial({
-                color: 0x44ff99,
-                transparent: true,
-                opacity: 0.025,
-                side: THREE.DoubleSide
-            })
-        );
-
-    zoneWall.position.y =
-        10;
-
-    zoneWall.scale.set(
-        zoneRadius,
-        1,
-        zoneRadius
-    );
-
-    scene.add(
-        zoneWall
-    );
-}
-
-/* ---------------------------------------------------------
-   PICKUPS
---------------------------------------------------------- */
-
-function createPickups() {
-
-    const locations = [
-        [-70, -20],
-        [65, 15],
-        [120, 90],
-        [-130, 80],
-        [150, -70],
-        [10, 110],
-        [-165, -50],
-        [90, -145]
+    const items=[
+        [-75,100,"ARMOR"],
+        [80,95,"MEDKIT"],
+        [-135,-40,"ARMOR"],
+        [135,-40,"MEDKIT"],
+        [-180,10,"ARMOR"],
+        [175,80,"MEDKIT"]
     ];
 
-    locations.forEach(
-        ([x, z], index) => {
+    for(const item of items){
 
-            createPickup(
-                x,
-                z,
-                index % 2 === 0
-                    ? "ARMOR"
-                    : "MEDKIT"
+        const color =
+            item[2]==="ARMOR"
+            ?0x35baff
+            :0x54ff9a;
+
+        const mesh =
+            new THREE.Mesh(
+                new THREE.BoxGeometry(
+                    2,
+                    2,
+                    2
+                ),
+                new THREE.MeshStandardMaterial({
+                    color,
+                    emissive:color,
+                    emissiveIntensity:.3
+                })
             );
-        }
-    );
-}
 
-function createPickup(
-    x,
-    z,
-    type
-) {
-
-    const color =
-        type === "ARMOR"
-            ? 0x3caeff
-            : 0x50ff8a;
-
-    const item =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                2,
-                2,
-                2
-            ),
-            new THREE.MeshStandardMaterial({
-                color,
-                emissive: color,
-                emissiveIntensity: 0.35
-            })
+        mesh.position.set(
+            item[0],
+            1.5,
+            item[1]
         );
 
-    item.position.set(
-        x,
-        1.5,
-        z
-    );
+        mesh.userData.type =
+            item[2];
 
-    item.userData.type =
-        type;
-
-    scene.add(item);
-
-    pickups.push(item);
+        scene.add(mesh);
+    }
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    KEYBOARD
---------------------------------------------------------- */
+   ========================================================= */
 
-function setupKeyboard() {
+function setupKeyboard(){
 
     window.addEventListener(
         "keydown",
-        (e) => {
+        event=>{
 
-            keys[e.code] = true;
+            keys[event.code]=true;
 
-            if (
+            if(
                 [
                     "ArrowUp",
                     "ArrowDown",
                     "ArrowLeft",
                     "ArrowRight",
                     "Space"
-                ].includes(e.code)
-            ) {
-                e.preventDefault();
+                ].includes(event.code)
+            ){
+                event.preventDefault();
             }
 
-            if (
-                e.code === "Digit1"
-            ) {
+            if(event.code==="Digit1")
                 switchWeapon(0);
-            }
 
-            if (
-                e.code === "Digit2"
-            ) {
+            if(event.code==="Digit2")
                 switchWeapon(1);
-            }
 
-            if (
-                e.code === "Digit3"
-            ) {
+            if(event.code==="Digit3")
                 switchWeapon(2);
-            }
 
-            if (
-                e.code === "KeyR"
-            ) {
+            if(event.code==="KeyR")
                 reload();
-            }
 
-            if (
-                e.code === "KeyV"
-            ) {
+            if(event.code==="KeyV"){
+
                 cameraMode =
-                    cameraMode === 3
-                        ? 1
-                        : 3;
+                    cameraMode===3
+                    ?1
+                    :3;
             }
 
-            if (
-                e.code === "KeyG"
-            ) {
+            if(event.code==="KeyG")
                 useMedkit();
-            }
 
-            if (
-                e.code === "Space" &&
+            if(
+                event.code==="Space" &&
                 onGround
-            ) {
+            ){
 
-                jumpVelocity =
-                    9.5;
-
-                onGround = false;
+                jumpVelocity=9;
+                onGround=false;
             }
-
-        },
-        {
-            passive: false
         }
     );
 
     window.addEventListener(
         "keyup",
-        (e) => {
-            keys[e.code] = false;
+        event=>{
+            keys[event.code]=false;
         }
     );
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    MOUSE
---------------------------------------------------------- */
+   ========================================================= */
 
-function setupMouse() {
+function setupMouse(){
 
     document.addEventListener(
         "mousemove",
-        (e) => {
+        event=>{
 
-            if (!running) {
+            if(
+                document.pointerLockElement !==
+                renderer?.domElement
+            ){
                 return;
             }
 
-            /* Desktop pointer lock */
+            yaw -=
+                event.movementX*.0025;
 
-            if (
-                document.pointerLockElement ===
-                renderer?.domElement
-            ) {
+            pitch -=
+                event.movementY*.002;
 
-                yaw -=
-                    e.movementX *
-                    0.0024;
-
-                pitch -=
-                    e.movementY *
-                    0.002;
-
-                pitch =
-                    THREE.MathUtils.clamp(
-                        pitch,
-                        -0.95,
-                        0.55
-                    );
-            }
-
+            pitch =
+                THREE.MathUtils.clamp(
+                    pitch,
+                    -0.9,
+                    .5
+                );
         }
     );
 
     document.addEventListener(
         "mousedown",
-        (e) => {
+        event=>{
 
-            if (!running) {
+            if(!renderer)
                 return;
-            }
 
-            if (
+            if(
                 document.pointerLockElement !==
                 renderer.domElement
-            ) {
+            ){
 
                 renderer.domElement
                     .requestPointerLock?.();
@@ -2115,9 +1471,7 @@ function setupMouse() {
                 return;
             }
 
-            if (
-                e.button === 0
-            ) {
+            if(event.button===0){
                 shoot();
             }
         }
@@ -2125,612 +1479,335 @@ function setupMouse() {
 
     renderer.domElement.addEventListener(
         "click",
-        () => {
-
-            if (
-                window.innerWidth > 700
-            ) {
-
-                renderer.domElement
-                    .requestPointerLock?.();
-
-            }
-
+        ()=>{
+            renderer.domElement
+                .requestPointerLock?.();
         }
     );
 }
 
-/* ---------------------------------------------------------
-   MOBILE CONTROLS
---------------------------------------------------------- */
+/* =========================================================
+   MOBILE
+   ========================================================= */
 
-function setupMobile() {
-
-    if (
-        document.getElementById(
-            "mobileControls"
-        )
-    ) {
-        return;
-    }
-
-    const controls =
-        document.createElement(
-            "div"
-        );
-
-    controls.id =
-        "mobileControls";
-
-    controls.innerHTML = `
-        <div id="mobileJoystick">
-            <div id="joystickKnob"></div>
-        </div>
-
-        <div id="mobileAim">
-            AIM
-        </div>
-
-        <button id="mobileFire">
-            FIRE
-        </button>
-
-        <button id="mobileJump">
-            JUMP
-        </button>
-
-        <button id="mobileSprint">
-            RUN
-        </button>
-
-        <button id="mobileReload">
-            R
-        </button>
-    `;
-
-    document.body.appendChild(
-        controls
-    );
-
-    const style =
-        document.createElement(
-            "style"
-        );
-
-    style.textContent = `
-
-        #mobileControls {
-            display:none;
-            position:fixed;
-            inset:0;
-            z-index:9999;
-            pointer-events:none;
-            user-select:none;
-            touch-action:none;
-        }
-
-        #mobileJoystick {
-            position:absolute;
-            left:24px;
-            bottom:35px;
-            width:120px;
-            height:120px;
-            border-radius:50%;
-            border:2px solid rgba(255,255,255,.25);
-            background:rgba(0,0,0,.22);
-            pointer-events:auto;
-        }
-
-        #joystickKnob {
-            position:absolute;
-            width:52px;
-            height:52px;
-            left:34px;
-            top:34px;
-            border-radius:50%;
-            background:rgba(82,225,191,.65);
-            box-shadow:0 0 20px rgba(82,225,191,.25);
-        }
-
-        #mobileAim {
-            position:absolute;
-            right:24px;
-            bottom:32px;
-            width:150px;
-            height:150px;
-            border-radius:50%;
-            border:1px dashed rgba(255,255,255,.14);
-            color:rgba(255,255,255,.25);
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            pointer-events:auto;
-            font-size:11px;
-            letter-spacing:2px;
-        }
-
-        #mobileFire,
-        #mobileJump,
-        #mobileSprint,
-        #mobileReload {
-            position:absolute;
-            border:0;
-            color:white;
-            font-weight:900;
-            pointer-events:auto;
-            touch-action:none;
-        }
-
-        #mobileFire {
-            right:35px;
-            bottom:200px;
-            width:82px;
-            height:82px;
-            border-radius:50%;
-            background:rgba(255,65,65,.65);
-        }
-
-        #mobileJump {
-            right:145px;
-            bottom:185px;
-            width:58px;
-            height:58px;
-            border-radius:50%;
-            background:rgba(80,160,255,.6);
-        }
-
-        #mobileSprint {
-            left:160px;
-            bottom:48px;
-            width:72px;
-            height:45px;
-            border-radius:12px;
-            background:rgba(82,225,191,.45);
-        }
-
-        #mobileReload {
-            right:155px;
-            bottom:255px;
-            width:48px;
-            height:48px;
-            border-radius:50%;
-            background:rgba(255,255,255,.18);
-        }
-
-        @media (max-width: 700px) {
-            #mobileControls {
-                display:block;
-            }
-
-            #help {
-                display:none !important;
-            }
-
-            #bottomHud {
-                transform:scale(.75);
-                transform-origin:left bottom;
-            }
-
-            #weaponBox {
-                transform:scale(.8);
-                transform-origin:right top;
-            }
-        }
-    `;
-
-    document.head.appendChild(
-        style
-    );
-
-    /* Joystick */
+function setupMobile(){
 
     const joystick =
-        document.getElementById(
-            "mobileJoystick"
-        );
+        $("joystick");
 
-    const knob =
-        document.getElementById(
-            "joystickKnob"
-        );
+    const stick =
+        $("stick");
 
-    let joystickTouch = null;
+    let joystickActive=false;
+
+    function updateJoystick(
+        clientX,
+        clientY
+    ){
+
+        const rect =
+            joystick.getBoundingClientRect();
+
+        const centerX =
+            rect.left+rect.width/2;
+
+        const centerY =
+            rect.top+rect.height/2;
+
+        let dx =
+            clientX-centerX;
+
+        let dy =
+            clientY-centerY;
+
+        const max =
+            rect.width*.35;
+
+        const distance =
+            Math.hypot(dx,dy);
+
+        if(distance>max){
+
+            dx =
+                dx/distance*max;
+
+            dy =
+                dy/distance*max;
+        }
+
+        mobileMoveX =
+            dx/max;
+
+        mobileMoveY =
+            -dy/max;
+
+        stick.style.transform =
+            `translate(${dx}px,${dy}px)`;
+    }
+
+    function resetJoystick(){
+
+        joystickActive=false;
+
+        mobileMoveX=0;
+        mobileMoveY=0;
+
+        stick.style.transform =
+            "translate(0,0)";
+    }
 
     joystick.addEventListener(
         "touchstart",
-        (e) => {
+        event=>{
 
-            e.preventDefault();
+            joystickActive=true;
 
-            joystickTouch =
-                e.changedTouches[0];
+            const touch =
+                event.touches[0];
 
+            updateJoystick(
+                touch.clientX,
+                touch.clientY
+            );
         },
-        {
-            passive: false
-        }
+        {passive:false}
     );
 
     joystick.addEventListener(
         "touchmove",
-        (e) => {
+        event=>{
 
-            e.preventDefault();
-
-            if (!joystickTouch) {
+            if(!joystickActive)
                 return;
-            }
 
             const touch =
-                [...e.touches].find(
-                    t =>
-                        t.identifier ===
-                        joystickTouch.identifier
-                );
+                event.touches[0];
 
-            if (!touch) {
-                return;
-            }
+            updateJoystick(
+                touch.clientX,
+                touch.clientY
+            );
 
-            const rect =
-                joystick.getBoundingClientRect();
-
-            const cx =
-                rect.left +
-                rect.width / 2;
-
-            const cy =
-                rect.top +
-                rect.height / 2;
-
-            let dx =
-                touch.clientX -
-                cx;
-
-            let dy =
-                touch.clientY -
-                cy;
-
-            const max = 40;
-
-            const len =
-                Math.hypot(
-                    dx,
-                    dy
-                );
-
-            if (len > max) {
-
-                dx =
-                    dx / len *
-                    max;
-
-                dy =
-                    dy / len *
-                    max;
-            }
-
-            knob.style.transform =
-                `translate(${dx}px, ${dy}px)`;
-
-            mobile.moveX =
-                dx / max;
-
-            mobile.moveY =
-                dy / max;
+            event.preventDefault();
         },
-        {
-            passive: false
-        }
+        {passive:false}
     );
 
     joystick.addEventListener(
         "touchend",
-        (e) => {
+        resetJoystick
+    );
 
-            e.preventDefault();
+    const fire =
+        $("fireBtn");
 
-            joystickTouch =
-                null;
+    fire.addEventListener(
+        "touchstart",
+        event=>{
 
-            mobile.moveX = 0;
-            mobile.moveY = 0;
+            event.preventDefault();
 
-            knob.style.transform =
-                "translate(0,0)";
+            mobileFire=true;
+
+            shoot();
         },
-        {
-            passive: false
+        {passive:false}
+    );
+
+    fire.addEventListener(
+        "touchend",
+        ()=>{
+            mobileFire=false;
         }
     );
 
-    /* Aim */
+    const sprint =
+        $("sprintBtn");
+
+    sprint.addEventListener(
+        "touchstart",
+        event=>{
+            event.preventDefault();
+            mobileSprint=true;
+        },
+        {passive:false}
+    );
+
+    sprint.addEventListener(
+        "touchend",
+        ()=>{
+            mobileSprint=false;
+        }
+    );
+
+    const jump =
+        $("jumpBtn");
+
+    jump.addEventListener(
+        "touchstart",
+        event=>{
+
+            event.preventDefault();
+
+            if(onGround){
+
+                jumpVelocity=9;
+                onGround=false;
+            }
+        },
+        {passive:false}
+    );
+
+    const reloadButton =
+        $("reloadBtn");
+
+    reloadButton.addEventListener(
+        "touchstart",
+        event=>{
+
+            event.preventDefault();
+
+            reload();
+        },
+        {passive:false}
+    );
 
     const aim =
-        document.getElementById(
-            "mobileAim"
-        );
+        $("aimZone");
 
-    let aimTouch = null;
+    let lastX=0;
+    let lastY=0;
+    let aiming=false;
 
     aim.addEventListener(
         "touchstart",
-        (e) => {
+        event=>{
 
-            e.preventDefault();
+            const touch =
+                event.touches[0];
 
-            aimTouch =
-                e.changedTouches[0];
+            lastX=touch.clientX;
+            lastY=touch.clientY;
 
-            touchLookX =
-                aimTouch.clientX;
-
-            touchLookY =
-                aimTouch.clientY;
-
+            aiming=true;
         },
-        {
-            passive: false
-        }
+        {passive:true}
     );
 
     aim.addEventListener(
         "touchmove",
-        (e) => {
+        event=>{
 
-            e.preventDefault();
-
-            if (!aimTouch) {
+            if(!aiming)
                 return;
-            }
 
             const touch =
-                [...e.touches].find(
-                    t =>
-                        t.identifier ===
-                        aimTouch.identifier
-                );
-
-            if (!touch) {
-                return;
-            }
+                event.touches[0];
 
             const dx =
-                touch.clientX -
-                touchLookX;
+                touch.clientX-lastX;
 
             const dy =
-                touch.clientY -
-                touchLookY;
+                touch.clientY-lastY;
 
-            yaw -=
-                dx * 0.006;
+            yaw -= dx*.008;
 
-            pitch -=
-                dy * 0.004;
+            pitch -= dy*.006;
 
             pitch =
                 THREE.MathUtils.clamp(
                     pitch,
-                    -0.95,
-                    0.55
+                    -.9,
+                    .5
                 );
 
-            touchLookX =
-                touch.clientX;
-
-            touchLookY =
-                touch.clientY;
-
+            lastX=touch.clientX;
+            lastY=touch.clientY;
         },
-        {
-            passive: false
-        }
+        {passive:true}
     );
 
     aim.addEventListener(
         "touchend",
-        () => {
-            aimTouch = null;
-        }
-    );
-
-    /* Fire */
-
-    const fire =
-        document.getElementById(
-            "mobileFire"
-        );
-
-    fire.addEventListener(
-        "touchstart",
-        (e) => {
-
-            e.preventDefault();
-
-            mobile.fire = true;
-
-            shoot();
-
-        },
-        {
-            passive: false
-        }
-    );
-
-    fire.addEventListener(
-        "touchend",
-        () => {
-            mobile.fire = false;
-        }
-    );
-
-    /* Jump */
-
-    const jump =
-        document.getElementById(
-            "mobileJump"
-        );
-
-    jump.addEventListener(
-        "touchstart",
-        (e) => {
-
-            e.preventDefault();
-
-            if (onGround) {
-
-                jumpVelocity =
-                    9.5;
-
-                onGround = false;
-            }
-
-        },
-        {
-            passive: false
-        }
-    );
-
-    /* Sprint */
-
-    const sprint =
-        document.getElementById(
-            "mobileSprint"
-        );
-
-    sprint.addEventListener(
-        "touchstart",
-        (e) => {
-
-            e.preventDefault();
-
-            mobile.sprint =
-                true;
-
-        },
-        {
-            passive: false
-        }
-    );
-
-    sprint.addEventListener(
-        "touchend",
-        () => {
-            mobile.sprint = false;
-        }
-    );
-
-    /* Reload */
-
-    const reloadButton =
-        document.getElementById(
-            "mobileReload"
-        );
-
-    reloadButton.addEventListener(
-        "touchstart",
-        (e) => {
-
-            e.preventDefault();
-
-            reload();
-
-        },
-        {
-            passive: false
+        ()=>{
+            aiming=false;
         }
     );
 }
 
-/* ---------------------------------------------------------
-   PLAYER MOVEMENT
---------------------------------------------------------- */
+/* =========================================================
+   PLAYER UPDATE
+   ========================================================= */
 
-function updatePlayer(dt) {
+function updatePlayer(dt){
 
-    if (!player) {
+    if(!player)
         return;
-    }
 
-    let forward = 0;
-    let side = 0;
+    let forward=0;
+    let side=0;
 
-    /* Keyboard */
-
-    if (
+    if(
         keys["KeyW"] ||
         keys["ArrowUp"]
-    ) {
-        forward += 1;
+    ){
+        forward+=1;
     }
 
-    if (
+    if(
         keys["KeyS"] ||
         keys["ArrowDown"]
-    ) {
-        forward -= 1;
+    ){
+        forward-=1;
     }
 
-    if (
+    if(
         keys["KeyA"] ||
         keys["ArrowLeft"]
-    ) {
-        side -= 1;
+    ){
+        side-=1;
     }
 
-    if (
+    if(
         keys["KeyD"] ||
         keys["ArrowRight"]
-    ) {
-        side += 1;
+    ){
+        side+=1;
     }
 
-    /* Mobile */
+    forward += mobileMoveY;
+    side += mobileMoveX;
 
-    forward +=
-        -mobile.moveY;
-
-    side +=
-        mobile.moveX;
-
-    const length =
+    const len =
         Math.hypot(
             forward,
             side
         );
 
-    if (length > 1) {
+    if(len>1){
 
-        forward /=
-            length;
-
-        side /=
-            length;
+        forward/=len;
+        side/=len;
     }
 
     crouching =
         keys["KeyC"] ||
         keys["ControlLeft"];
 
-    let speed =
-        crouching
-            ? 4.5
-            : 8.5;
-
     const sprinting =
         keys["ShiftLeft"] ||
         keys["ShiftRight"] ||
-        mobile.sprint;
+        mobileSprint;
 
-    if (sprinting) {
-        speed =
-            crouching
-                ? 5
-                : 14;
-    }
+    let speed =
+        sprinting
+        ?17
+        :10;
 
-    if (length > 0.05) {
+    if(crouching)
+        speed=5;
+
+    if(len>.05){
 
         const sin =
             Math.sin(yaw);
@@ -2740,69 +1817,55 @@ function updatePlayer(dt) {
 
         player.position.x +=
             (
-                side * cos +
-                forward * sin
+                side*cos +
+                forward*sin
             ) *
             speed *
             dt;
 
         player.position.z +=
             (
-                side * sin -
-                forward * cos
+                side*sin -
+                forward*cos
             ) *
             speed *
             dt;
 
         player.rotation.y =
             yaw;
-
-        /* walk animation */
-
-        const bob =
-            Math.sin(
-                performance.now() *
-                0.014
-            ) *
-            0.045;
-
-        player.position.y =
-            Math.max(
-                0,
-                player.position.y +
-                    bob * dt
-            );
     }
 
-    /* Jump */
+    /*
+      Jump
+    */
 
-    if (!onGround) {
+    if(!onGround){
 
         jumpVelocity -=
-            24 * dt;
+            24*dt;
 
         player.position.y +=
-            jumpVelocity * dt;
+            jumpVelocity*dt;
 
-        if (
-            player.position.y <= 0
-        ) {
+        if(
+            player.position.y<=0
+        ){
 
-            player.position.y = 0;
-
-            jumpVelocity = 0;
-
-            onGround = true;
+            player.position.y=0;
+            jumpVelocity=0;
+            onGround=true;
         }
     }
 
-    /* Bounds */
+    /*
+      map bounds
+    */
 
     player.position.x =
         THREE.MathUtils.clamp(
             player.position.x,
-            -225,
-            225
+            -245,
+            245
         );
 
     player.position.z =
@@ -2813,38 +1876,27 @@ function updatePlayer(dt) {
         );
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    CAMERA
---------------------------------------------------------- */
+   ========================================================= */
 
-function updateCamera() {
+function updateCamera(){
 
-    if (!player || !camera) {
+    if(!player)
         return;
-    }
 
-    /* First person */
+    if(cameraMode===1){
 
-    if (
-        cameraMode === 1
-    ) {
-
-        const target =
+        const head =
             new THREE.Vector3(
                 0,
-                crouching
-                    ? 5
-                    : 6,
+                6.2,
                 0
             );
 
-        player.localToWorld(
-            target
-        );
+        player.localToWorld(head);
 
-        camera.position.copy(
-            target
-        );
+        camera.position.copy(head);
 
         camera.rotation.order =
             "YXZ";
@@ -2858,131 +1910,109 @@ function updateCamera() {
         return;
     }
 
-    /* Third person */
-
     const target =
         new THREE.Vector3(
             0,
-            crouching
-                ? 4.8
-                : 5.5,
+            crouching?4.5:5.2,
             0
         );
 
-    player.localToWorld(
-        target
-    );
+    player.localToWorld(target);
 
     const distance =
         crouching
-            ? 5.5
-            : 6.5;
+        ?5.5
+        :6.5;
 
-    const horizontal =
-        Math.cos(pitch) *
-        distance;
-
-    const vertical =
-        Math.sin(pitch) *
-        distance;
+    const height =
+        crouching
+        ?3.8
+        :4.8;
 
     const offset =
         new THREE.Vector3(
             0,
-            vertical + 1.5,
-            horizontal
+            height,
+            distance
         );
 
     offset.applyAxisAngle(
-        new THREE.Vector3(
-            0,
-            1,
-            0
-        ),
+        new THREE.Vector3(1,0,0),
+        pitch
+    );
+
+    offset.applyAxisAngle(
+        new THREE.Vector3(0,1,0),
         yaw
     );
 
     const desired =
-        target
-            .clone()
-            .add(offset);
+        target.clone().add(offset);
 
     camera.position.lerp(
         desired,
-        0.15
+        .16
     );
 
-    camera.lookAt(
-        target
-    );
+    camera.lookAt(target);
 }
 
-/* ---------------------------------------------------------
-   SHOOT
---------------------------------------------------------- */
+/* =========================================================
+   SHOOTING
+   ========================================================= */
 
-function shoot() {
+function shoot(){
 
-    if (!running) {
-        return;
-    }
-
-    if (reloading) {
+    if(
+        !running ||
+        reloading
+    ){
         return;
     }
 
     const weapon =
-        weapons[
-            currentWeapon
-        ];
+        weapons[currentWeapon];
 
     const now =
         performance.now();
 
-    if (
-        now -
-            lastShot <
+    if(
+        now-lastShot <
         weapon.fireRate
-    ) {
+    ){
         return;
     }
 
-    if (
-        weapon.ammo <= 0
-    ) {
+    if(weapon.ammo<=0){
 
         reload();
-
         return;
     }
 
-    lastShot = now;
+    lastShot=now;
 
     weapon.ammo--;
 
-    for (
-        let i = 0;
-        i < weapon.pellets;
+    const pellets =
+        weapon.pellets || 1;
+
+    for(
+        let i=0;
+        i<pellets;
         i++
-    ) {
+    ){
 
         fireRay(
             weapon
         );
     }
 
-    createMuzzleFlash();
+    muzzleFlash();
 
     updateHUD();
 }
 
-/* ---------------------------------------------------------
-   RAY SHOOT
---------------------------------------------------------- */
-
-function fireRay(
-    weapon
-) {
+function fireRay(weapon){
 
     const raycaster =
         new THREE.Raycaster();
@@ -3002,17 +2032,11 @@ function fireRay(
     );
 
     direction.x +=
-        (
-            Math.random() -
-            0.5
-        ) *
+        (Math.random()-.5)*
         weapon.spread;
 
     direction.y +=
-        (
-            Math.random() -
-            0.5
-        ) *
+        (Math.random()-.5)*
         weapon.spread;
 
     direction.normalize();
@@ -3022,30 +2046,26 @@ function fireRay(
         direction
     );
 
-    const targets = [];
+    const targets=[];
 
     enemies.forEach(
-        (enemy) => {
+        enemy=>{
 
-            if (
-                !enemy.userData.alive
-            ) {
-                return;
-            }
+            if(
+                enemy.userData.alive
+            ){
 
-            enemy.traverse(
-                (obj) => {
+                enemy.traverse(
+                    child=>{
 
-                    if (
-                        obj.isMesh
-                    ) {
-                        targets.push(
-                            obj
-                        );
+                        if(
+                            child.isMesh
+                        ){
+                            targets.push(child);
+                        }
                     }
-
-                }
-            );
+                );
+            }
         }
     );
 
@@ -3055,43 +2075,26 @@ function fireRay(
             false
         );
 
-    if (
-        hits.length === 0
-    ) {
-        createTracer(
-            origin,
-            origin.clone().add(
-                direction.multiplyScalar(
-                    80
-                )
-            )
-        );
-
+    if(!hits.length)
         return;
-    }
-
-    const hit =
-        hits[0];
 
     let object =
-        hit.object;
+        hits[0].object;
 
-    let enemy = null;
+    let enemy=null;
 
-    while (
+    while(
         object &&
-        object !== scene
-    ) {
+        object!==scene
+    ){
 
-        if (
+        if(
             object.userData &&
-            object.userData.health !==
-                undefined
-        ) {
+            object.userData.alive
+            !==undefined
+        ){
 
-            enemy =
-                object;
-
+            enemy=object;
             break;
         }
 
@@ -3099,176 +2102,107 @@ function fireRay(
             object.parent;
     }
 
-    if (enemy) {
+    if(enemy){
 
         damageEnemy(
             enemy,
             weapon.damage
         );
     }
-
-    createTracer(
-        origin,
-        hit.point
-    );
 }
 
-/* ---------------------------------------------------------
-   BULLET TRACER
---------------------------------------------------------- */
+/* =========================================================
+   MUZZLE
+   ========================================================= */
 
-function createTracer(
-    from,
-    to
-) {
-
-    const geometry =
-        new THREE.BufferGeometry()
-            .setFromPoints([
-                from,
-                to
-            ]);
-
-    const material =
-        new THREE.LineBasicMaterial({
-            color: 0xffe2a0,
-            transparent: true,
-            opacity: 0.65
-        });
-
-    const line =
-        new THREE.Line(
-            geometry,
-            material
-        );
-
-    scene.add(line);
-
-    setTimeout(
-        () => {
-
-            scene.remove(
-                line
-            );
-
-            geometry.dispose();
-            material.dispose();
-
-        },
-        45
-    );
-}
-
-/* ---------------------------------------------------------
-   MUZZLE FLASH
---------------------------------------------------------- */
-
-function createMuzzleFlash() {
-
-    if (!playerGun) {
-        return;
-    }
+function muzzleFlash(){
 
     const flash =
         new THREE.Mesh(
             new THREE.SphereGeometry(
-                0.3,
+                .22,
                 8,
                 8
             ),
             new THREE.MeshBasicMaterial({
-                color: 0xffb82e
+                color:0xffc34a
             })
         );
 
-    const position =
+    const pos =
         new THREE.Vector3(
             0,
             0,
-            -3.1
+            -3
         );
 
     playerGun.localToWorld(
-        position
+        pos
     );
 
-    flash.position.copy(
-        position
-    );
+    flash.position.copy(pos);
 
     scene.add(flash);
 
     setTimeout(
-        () => {
+        ()=>{
             scene.remove(flash);
         },
         45
     );
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    ENEMY DAMAGE
---------------------------------------------------------- */
+   ========================================================= */
 
 function damageEnemy(
     enemy,
     damage
-) {
+){
 
-    if (
+    if(
         !enemy.userData.alive
-    ) {
+    ){
         return;
     }
 
     enemy.userData.health -=
         damage;
 
-    if (
-        enemy.userData.health <=
-        0
-    ) {
+    if(
+        enemy.userData.health<=0
+    ){
 
-        enemy.userData.health = 0;
+        enemy.userData.alive=false;
 
-        enemy.userData.alive =
-            false;
-
-        enemy.visible = false;
+        enemy.visible=false;
 
         kills++;
 
-        aliveCount--;
-
         updateHUD();
 
-        if (
-            aliveCount <= 1
-        ) {
+        if(
+            aliveEnemies()<=1
+        ){
 
-            finishGame(
-                true
-            );
+            finishGame(true);
         }
     }
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    ENEMY AI
---------------------------------------------------------- */
+   ========================================================= */
 
-function updateEnemies(dt) {
-
-    if (!player) {
-        return;
-    }
+function updateEnemies(dt){
 
     enemies.forEach(
-        (enemy) => {
+        enemy=>{
 
-            if (
+            if(
                 !enemy.userData.alive
-            ) {
+            ){
                 return;
             }
 
@@ -3287,13 +2221,13 @@ function updateEnemies(dt) {
                 );
 
             /*
-              Enemies only chase when
-              relatively close.
+              Enemy only becomes aggressive
+              when reasonably close.
             */
 
-            if (
-                distance < 105
-            ) {
+            if(
+                distance<110
+            ){
 
                 const angle =
                     Math.atan2(
@@ -3304,21 +2238,17 @@ function updateEnemies(dt) {
                 enemy.rotation.y =
                     angle;
 
-                if (
-                    distance > 16
-                ) {
+                if(
+                    distance>22
+                ){
 
                     enemy.position.x +=
-                        Math.sin(
-                            angle
-                        ) *
+                        Math.sin(angle) *
                         enemy.userData.speed *
                         dt;
 
                     enemy.position.z +=
-                        -Math.cos(
-                            angle
-                        ) *
+                        -Math.cos(angle) *
                         enemy.userData.speed *
                         dt;
                 }
@@ -3326,126 +2256,91 @@ function updateEnemies(dt) {
                 enemy.userData.attackTimer -=
                     dt;
 
-                if (
-                    distance < 42 &&
-                    enemy.userData.attackTimer <=
-                        0
-                ) {
+                if(
+                    distance<65 &&
+                    enemy.userData.attackTimer<=0
+                ){
 
                     enemy.userData.attackTimer =
-                        0.75 +
-                        Math.random() *
-                        0.8;
+                        1.2+
+                        Math.random()*1.3;
 
                     enemyShoot(
-                        enemy
+                        enemy,
+                        distance
                     );
                 }
 
-            } else {
-
-                /* patrol */
+            }else{
 
                 const t =
-                    performance.now() *
-                        0.0002 +
+                    performance.now()*.0002+
                     enemy.userData.seed;
 
                 enemy.position.x +=
-                    Math.sin(t) *
-                    dt *
-                    0.35;
+                    Math.sin(t)*
+                    .4*
+                    dt;
 
                 enemy.position.z +=
-                    Math.cos(t) *
-                    dt *
-                    0.35;
+                    Math.cos(t)*
+                    .4*
+                    dt;
             }
-
-            /* bounds */
-
-            enemy.position.x =
-                THREE.MathUtils.clamp(
-                    enemy.position.x,
-                    -220,
-                    220
-                );
-
-            enemy.position.z =
-                THREE.MathUtils.clamp(
-                    enemy.position.z,
-                    -185,
-                    185
-                );
         }
     );
 }
 
-/* ---------------------------------------------------------
-   ENEMY SHOOT
---------------------------------------------------------- */
-
 function enemyShoot(
-    enemy
-) {
+    enemy,
+    distance
+){
 
-    const distance =
-        player.position.distanceTo(
-            enemy.position
-        );
+    /*
+      AI accuracy
+    */
 
-    const hitChance =
-        distance < 25
-            ? 0.52
-            : 0.28;
+    const chance =
+        distance<35
+        ? .48
+        : .22;
 
-    if (
-        Math.random() >
-        hitChance
-    ) {
+    if(
+        Math.random()>chance
+    ){
         return;
     }
 
     const damage =
-        6 +
-        Math.random() *
-        7;
+        5+
+        Math.random()*6;
 
     damagePlayer(
         damage
     );
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    PLAYER DAMAGE
---------------------------------------------------------- */
+   ========================================================= */
 
 function damagePlayer(
     damage
-) {
+){
 
-    if (!running) {
+    if(!running)
         return;
-    }
 
     const armorHit =
         Math.min(
             armor,
-            damage * 0.6
+            damage*.65
         );
 
-    armor -=
-        armorHit;
+    armor -= armorHit;
 
     health -=
-        damage -
-        armorHit;
-
-    health =
-        Math.max(
-            0,
-            health
-        );
+        damage-armorHit;
 
     armor =
         Math.max(
@@ -3453,113 +2348,98 @@ function damagePlayer(
             armor
         );
 
+    health =
+        Math.max(
+            0,
+            health
+        );
+
     updateHUD();
 
-    if (
-        health <= 0
-    ) {
+    if(health<=0){
 
-        finishGame(
-            false
-        );
+        finishGame(false);
     }
 }
 
-/* ---------------------------------------------------------
-   WEAPON
---------------------------------------------------------- */
+/* =========================================================
+   WEAPONS
+   ========================================================= */
 
 function switchWeapon(
     index
-) {
+){
 
-    if (
-        index < 0 ||
-        index >= weapons.length
-    ) {
+    if(
+        index<0 ||
+        index>=weapons.length
+    ){
         return;
     }
 
-    currentWeapon =
-        index;
+    currentWeapon=index;
 
-    reloading = false;
+    reloading=false;
 
     updateHUD();
 }
 
-/* ---------------------------------------------------------
-   RELOAD
---------------------------------------------------------- */
+function reload(){
 
-function reload() {
-
-    if (
+    if(
         reloading
-    ) {
+    ){
         return;
     }
 
     const weapon =
-        weapons[
-            currentWeapon
-        ];
+        weapons[currentWeapon];
 
-    if (
-        weapon.ammo >=
-        weapon.mag
-    ) {
+    if(
+        weapon.ammo>=weapon.mag ||
+        weapon.reserve<=0
+    ){
         return;
     }
 
-    if (
-        weapon.reserve <= 0
-    ) {
-        return;
-    }
-
-    reloading = true;
-
-    updateHUD();
+    reloading=true;
 
     setTimeout(
-        () => {
+        ()=>{
 
-            const needed =
-                weapon.mag -
+            const need =
+                weapon.mag-
                 weapon.ammo;
 
             const amount =
                 Math.min(
-                    needed,
+                    need,
                     weapon.reserve
                 );
 
-            weapon.ammo +=
-                amount;
+            weapon.ammo += amount;
 
-            weapon.reserve -=
-                amount;
+            weapon.reserve -= amount;
 
-            reloading = false;
+            reloading=false;
 
             updateHUD();
 
         },
-        1200
+        1100
     );
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    MEDKIT
---------------------------------------------------------- */
+   ========================================================= */
 
-function useMedkit() {
+function useMedkit(){
 
-    if (
-        medkits <= 0 ||
-        health >= 100
-    ) {
+    if(
+        medkits<=0 ||
+        health>=100
+    ){
         return;
     }
 
@@ -3568,121 +2448,37 @@ function useMedkit() {
     health =
         Math.min(
             100,
-            health + 45
+            health+45
         );
 
     updateHUD();
 }
 
-/* ---------------------------------------------------------
-   PICKUPS UPDATE
---------------------------------------------------------- */
+/* =========================================================
+   ZONE
+   ========================================================= */
 
-function updatePickups(
-    dt
-) {
+function updateZone(dt){
 
-    pickups.forEach(
-        (item) => {
+    zoneShrinkTimer += dt;
 
-            if (
-                !item.visible
-            ) {
-                return;
-            }
+    if(
+        zoneShrinkTimer>4
+    ){
 
-            item.rotation.y +=
-                dt * 1.8;
-
-            item.position.y =
-                1.5 +
-                Math.sin(
-                    performance.now() *
-                    0.003
-                ) *
-                0.35;
-
-            const distance =
-                item.position.distanceTo(
-                    player.position
-                );
-
-            if (
-                distance < 3.5
-            ) {
-
-                if (
-                    item.userData.type ===
-                    "ARMOR"
-                ) {
-
-                    armor =
-                        Math.min(
-                            100,
-                            armor + 35
-                        );
-                }
-
-                if (
-                    item.userData.type ===
-                    "MEDKIT"
-                ) {
-
-                    medkits++;
-                }
-
-                item.visible =
-                    false;
-
-                updateHUD();
-            }
-        }
-    );
-}
-
-/* ---------------------------------------------------------
-   ZONE UPDATE
---------------------------------------------------------- */
-
-function updateZone(
-    dt
-) {
-
-    zoneTimer += dt;
-
-    if (
-        zoneTimer > 4
-    ) {
-
-        zoneTimer = 0;
+        zoneShrinkTimer=0;
 
         zoneRadius =
             Math.max(
                 45,
-                zoneRadius -
-                    0.7
+                zoneRadius-.7
             );
 
-        if (zoneMesh) {
-
-            zoneMesh.scale.set(
-                zoneRadius /
-                    175,
-                zoneRadius /
-                    175,
-                zoneRadius /
-                    175
-            );
-        }
-
-        if (zoneWall) {
-
-            zoneWall.scale.set(
-                zoneRadius,
-                1,
-                zoneRadius
-            );
-        }
+        zoneMesh.scale.set(
+            zoneRadius/170,
+            zoneRadius/170,
+            zoneRadius/170
+        );
     }
 
     const distance =
@@ -3691,124 +2487,94 @@ function updateZone(
             player.position.z
         );
 
-    if (
-        distance >
-        zoneRadius
-    ) {
+    const warning =
+        $("zoneWarning");
+
+    if(
+        distance>zoneRadius
+    ){
 
         damagePlayer(
-            3.2 * dt
+            2.7*dt
         );
+
+        if(warning)
+            warning.style.opacity=1;
+
+    }else{
+
+        if(warning)
+            warning.style.opacity=0;
     }
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    HUD
---------------------------------------------------------- */
+   ========================================================= */
 
-function updateHUD() {
+function updateHUD(){
 
     const weapon =
-        weapons[
-            currentWeapon
-        ];
+        weapons[currentWeapon];
 
-    if ($("health")) {
-        $("health").textContent =
-            Math.ceil(
-                health
-            );
-    }
+    $("health").textContent =
+        Math.ceil(health);
 
-    if ($("armor")) {
-        $("armor").textContent =
-            Math.ceil(
-                armor
-            );
-    }
+    $("armor").textContent =
+        Math.ceil(armor);
 
-    if ($("ammo")) {
+    $("ammo").textContent =
+        weapon.ammo+
+        " / "+
+        weapon.reserve;
 
-        $("ammo").textContent =
-            reloading
-                ? "RELOADING"
-                :
-                weapon.ammo +
-                " / " +
-                weapon.reserve;
-    }
+    $("weapon").textContent =
+        reloading
+        ? "RELOADING"
+        : weapon.name;
 
-    if ($("weapon")) {
+    $("kills").textContent =
+        kills;
 
-        $("weapon").textContent =
-            weapon.name;
-    }
+    $("alive").textContent =
+        aliveEnemies();
 
-    if ($("kills")) {
+    $("medkits").textContent =
+        medkits;
 
-        $("kills").textContent =
-            kills;
-    }
+    $("zone").textContent =
+        Math.round(zoneRadius)+
+        "m";
 
-    if ($("alive")) {
-
-        $("alive").textContent =
-            aliveCount;
-    }
-
-    if ($("medkits")) {
-
-        $("medkits").textContent =
-            medkits;
-    }
-
-    if ($("zone")) {
-
-        $("zone").textContent =
-            Math.round(
-                zoneRadius
-            ) +
-            "m";
-    }
+    $("healthBar").style.width =
+        health+"%";
 }
 
-/* ---------------------------------------------------------
-   CAMERA / WORLD ANIMATION
---------------------------------------------------------- */
+function aliveEnemies(){
 
-function animateWorld(
-    dt
-) {
+    let count=1;
 
-    /* street lights */
-
-    streetLights.forEach(
-        (light, index) => {
-
-            const pulse =
-                1 +
-                Math.sin(
-                    performance.now() *
-                        0.002 +
-                    index
-                ) *
-                0.08;
-
-            light.scale.y =
-                pulse;
+    enemies.forEach(
+        enemy=>{
+            if(
+                enemy.userData.alive
+            ){
+                count++;
+            }
         }
     );
+
+    return count;
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    GAME LOOP
---------------------------------------------------------- */
+   ========================================================= */
 
-function gameLoop() {
+function gameLoop(){
 
-    if (!running) {
+    if(!running)
         return;
-    }
 
     requestAnimationFrame(
         gameLoop
@@ -3817,36 +2583,24 @@ function gameLoop() {
     const dt =
         Math.min(
             clock.getDelta(),
-            0.05
+            .05
         );
 
-    updatePlayer(
-        dt
-    );
+    updatePlayer(dt);
 
-    updateEnemies(
-        dt
-    );
+    updateEnemies(dt);
 
-    updatePickups(
-        dt
-    );
-
-    updateZone(
-        dt
-    );
-
-    animateWorld(
-        dt
-    );
+    updateZone(dt);
 
     updateCamera();
 
-    /* Mobile continuous fire */
+    /*
+      Mobile auto fire
+    */
 
-    if (
-        mobile.fire
-    ) {
+    if(
+        mobileFire
+    ){
         shoot();
     }
 
@@ -3856,132 +2610,109 @@ function gameLoop() {
     );
 }
 
-/* ---------------------------------------------------------
-   FINISH GAME
---------------------------------------------------------- */
+/* =========================================================
+   END GAME
+   ========================================================= */
 
 function finishGame(
     won
-) {
+){
 
-    if (
+    if(
+        !running ||
         gameEnded
-    ) {
+    ){
         return;
     }
 
-    gameEnded = true;
-    running = false;
+    running=false;
+    gameEnded=true;
 
     document.exitPointerLock?.();
 
-    if ($("result")) {
+    $("result").style.display=
+        "flex";
 
-        $("result").style.display =
-            "flex";
-    }
+    $("resultTitle").textContent=
+        won
+        ? "BOOYAH!"
+        : "ELIMINATED";
 
-    if ($("resultTitle")) {
-
-        $("resultTitle").textContent =
-            won
-                ? "BOOYAH!"
-                : "ELIMINATED";
-    }
-
-    if ($("resultText")) {
-
-        $("resultText").textContent =
-            won
-                ? `WINNER • ${kills} ELIMINATIONS`
-                : `ELIMINATED • ${kills} ELIMINATIONS`;
-    }
+    $("resultText").textContent=
+        won
+        ? `WINNER • ${kills} ELIMINATIONS`
+        : `ELIMINATED • ${kills} ELIMINATIONS`;
 }
 
-/* ---------------------------------------------------------
-   RESTART
---------------------------------------------------------- */
+function restartGame(){
 
-function restartGame() {
-    window.location.reload();
+    location.reload();
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
    RESIZE
---------------------------------------------------------- */
+   ========================================================= */
 
-function resizeGame() {
+function resizeGame(){
 
-    if (
+    if(
         !camera ||
         !renderer
-    ) {
+    ){
         return;
     }
 
     camera.aspect =
-        window.innerWidth /
-        window.innerHeight;
+        innerWidth/
+        innerHeight;
 
     camera.updateProjectionMatrix();
 
     renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
+        innerWidth,
+        innerHeight
     );
 }
 
-/* ---------------------------------------------------------
-   DOM READY
---------------------------------------------------------- */
+window.addEventListener(
+    "resize",
+    resizeGame
+);
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
 
 document.addEventListener(
     "DOMContentLoaded",
-    () => {
+    ()=>{
 
-        const enter =
-            $("enter");
+        /*
+          Direct listener + inline-safe global
+        */
 
-        const name =
-            $("name");
+        $("enter").addEventListener(
+            "click",
+            ()=>{
+                window.startGame();
+            }
+        );
 
-        const again =
-            $("again");
+        $("name").addEventListener(
+            "keydown",
+            event=>{
 
-        if (enter) {
-
-            enter.addEventListener(
-                "click",
-                () => {
-
+                if(
+                    event.key==="Enter"
+                ){
                     window.startGame();
                 }
-            );
-        }
+            }
+        );
 
-        if (name) {
-
-            name.addEventListener(
-                "keydown",
-                (e) => {
-
-                    if (
-                        e.key ===
-                        "Enter"
-                    ) {
-
-                        window.startGame();
-                    }
-                }
-            );
-        }
-
-        if (again) {
-
-            again.addEventListener(
-                "click",
-                restartGame
-            );
-        }
+        $("again").addEventListener(
+            "click",
+            restartGame
+        );
     }
 );
