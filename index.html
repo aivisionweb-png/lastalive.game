@@ -1,425 +1,322 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>LAST//ALIVE — District 07</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LAST//ALIVE</title>
 
-<style>
-*{box-sizing:border-box}
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#050807;
-  color:#fff;
-  font-family:Arial,Helvetica,sans-serif;
-}
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #080b0d;
+      font-family: Arial, Helvetica, sans-serif;
+    }
 
-canvas{
-  display:block;
-}
+    canvas {
+      display: block;
+    }
 
-#start{
-  position:fixed;
-  inset:0;
-  z-index:20;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:
-    radial-gradient(circle at 50% 40%,#123226 0,#07100c 35%,#020403 75%);
-}
+    #start {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(circle at 50% 40%, rgba(35, 70, 74, .35), transparent 40%),
+        linear-gradient(135deg, #050708, #101719);
+    }
 
-.card{
-  width:min(500px,90vw);
-  padding:40px;
-  border:1px solid #315442;
-  background:rgba(3,10,7,.94);
-  box-shadow:0 30px 100px #000;
-}
+    .card {
+      width: min(430px, 90vw);
+      padding: 42px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(8,12,14,.88);
+      box-shadow: 0 30px 100px rgba(0,0,0,.65);
+      backdrop-filter: blur(18px);
+    }
 
-.logo{
-  font-size:42px;
-  font-weight:900;
-  letter-spacing:4px;
-}
+    .logo {
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      color: white;
+    }
 
-.logo i{
-  color:#58ffad;
-  font-style:normal;
-}
+    .logo i {
+      color: #39e6c4;
+      font-style: normal;
+    }
 
-.sub{
-  margin-top:8px;
-  color:#799184;
-  font-size:10px;
-  letter-spacing:4px;
-}
+    .sub {
+      margin-top: 8px;
+      margin-bottom: 30px;
+      color: #758487;
+      font-size: 11px;
+      letter-spacing: 3px;
+    }
 
-input{
-  width:100%;
-  margin-top:28px;
-  padding:16px;
-  background:#09130e;
-  border:1px solid #294636;
-  color:#fff;
-  outline:0;
-  font-size:16px;
-}
+    #name {
+      width: 100%;
+      padding: 16px;
+      border: 1px solid #263638;
+      outline: none;
+      background: #101719;
+      color: white;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
 
-button{
-  width:100%;
-  margin-top:14px;
-  padding:17px;
-  border:0;
-  background:#58ffad;
-  color:#031009;
-  font-weight:900;
-  letter-spacing:2px;
-  cursor:pointer;
-}
+    #enter {
+      width: 100%;
+      padding: 17px;
+      border: 0;
+      cursor: pointer;
+      background: #39e6c4;
+      color: #06100f;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
 
-button:hover{
-  filter:brightness(1.08);
-}
+    #hud {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+      color: white;
+    }
 
-.controls{
-  margin-top:20px;
-  color:#81988a;
-  font-size:11px;
-  line-height:2;
-}
+    #top {
+      position: absolute;
+      top: 22px;
+      left: 22px;
+      right: 22px;
+      display: flex;
+      justify-content: space-between;
+    }
 
-#hud{
-  display:none;
-  position:fixed;
-  inset:0;
-  z-index:10;
-  pointer-events:none;
-}
+    .hudBox {
+      background: rgba(5,8,9,.72);
+      border: 1px solid rgba(255,255,255,.1);
+      padding: 12px 16px;
+      backdrop-filter: blur(10px);
+    }
 
-.brand{
-  position:absolute;
-  top:24px;
-  left:28px;
-  font-size:27px;
-  font-weight:900;
-  letter-spacing:3px;
-}
+    .label {
+      color: #7c8a8d;
+      font-size: 9px;
+      letter-spacing: 2px;
+    }
 
-.brand i{
-  color:#58ffad;
-  font-style:normal;
-}
+    .value {
+      margin-top: 4px;
+      font-size: 18px;
+      font-weight: 900;
+    }
 
-.box{
-  position:absolute;
-  background:rgba(2,8,5,.72);
-  border:1px solid rgba(88,255,173,.22);
-}
+    #bottom {
+      position: absolute;
+      left: 22px;
+      bottom: 22px;
+      display: flex;
+      gap: 10px;
+    }
 
-.top{
-  top:22px;
-  right:22px;
-  padding:13px 18px;
-  min-width:140px;
-}
+    .stat {
+      min-width: 90px;
+    }
 
-.top small{
-  color:#789184;
-  letter-spacing:3px;
-}
+    #crosshair {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 18px;
+      height: 18px;
+      transform: translate(-50%, -50%);
+    }
 
-.alive{
-  font-size:31px;
-  font-weight:900;
-}
+    #crosshair::before,
+    #crosshair::after {
+      content: "";
+      position: absolute;
+      background: rgba(255,255,255,.9);
+    }
 
-.zone{
-  color:#58ffad;
-  font-size:10px;
-  letter-spacing:2px;
-}
+    #crosshair::before {
+      width: 18px;
+      height: 1px;
+      top: 9px;
+    }
 
-.status{
-  left:24px;
-  bottom:24px;
-  width:350px;
-  padding:15px;
-}
+    #crosshair::after {
+      width: 1px;
+      height: 18px;
+      left: 9px;
+    }
 
-.row{
-  display:flex;
-  justify-content:space-between;
-  font-size:11px;
-  letter-spacing:2px;
-}
+    #controls {
+      position: absolute;
+      right: 22px;
+      bottom: 22px;
+      text-align: right;
+      color: #9aa5a7;
+      font-size: 10px;
+      line-height: 1.8;
+      letter-spacing: 1px;
+    }
 
-.bar{
-  height:7px;
-  background:#18241e;
-  margin-top:7px;
-}
+    #result {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.72);
+    }
 
-.fill{
-  height:100%;
-  width:100%;
-  background:#58ffad;
-}
+    .resultCard {
+      text-align: center;
+      background: #0b1012;
+      border: 1px solid #263638;
+      padding: 45px;
+      min-width: 340px;
+    }
 
-.blue{
-  background:#5db9ff;
-}
+    #resultTitle {
+      color: #39e6c4;
+      font-size: 48px;
+      margin: 0;
+    }
 
-.weapon{
-  right:24px;
-  bottom:24px;
-  width:310px;
-  padding:16px;
-  text-align:right;
-}
+    #resultText {
+      color: #879396;
+      margin: 12px 0 25px;
+    }
 
-.weapon small{
-  color:#789184;
-  letter-spacing:3px;
-}
-
-.ammo{
-  font-size:38px;
-  font-weight:900;
-}
-
-.ammo span{
-  font-size:15px;
-  color:#718078;
-}
-
-.help{
-  font-size:9px;
-  color:#58ffad;
-  line-height:1.7;
-}
-
-#cross{
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:22px;
-  height:22px;
-  transform:translate(-50%,-50%);
-}
-
-#cross:before,
-#cross:after{
-  content:"";
-  position:absolute;
-  background:#fff;
-  box-shadow:0 0 6px #fff;
-}
-
-#cross:before{
-  width:2px;
-  height:22px;
-  left:10px;
-}
-
-#cross:after{
-  width:22px;
-  height:2px;
-  top:10px;
-}
-
-#damage{
-  position:absolute;
-  inset:0;
-  background:#f00;
-  opacity:0;
-  transition:opacity .08s;
-}
-
-#mode{
-  position:absolute;
-  bottom:22px;
-  left:50%;
-  transform:translateX(-50%);
-  padding:7px 12px;
-  border:1px solid #315442;
-  background:#030806aa;
-  color:#7d9889;
-  font-size:9px;
-  letter-spacing:2px;
-}
-
-#result{
-  display:none;
-  position:absolute;
-  inset:0;
-  z-index:30;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  background:#000b;
-  pointer-events:auto;
-}
-
-#result h1{
-  font-size:62px;
-  letter-spacing:5px;
-  margin:0;
-}
-
-#result p{
-  color:#91a59a;
-}
-
-#result button{
-  width:220px;
-  pointer-events:auto;
-}
-</style>
+    #again {
+      pointer-events: auto;
+      padding: 14px 28px;
+      border: 0;
+      background: white;
+      font-weight: 900;
+      cursor: pointer;
+    }
+  </style>
 </head>
 
 <body>
 
-<div id="start">
+  <div id="start">
+    <div class="card">
+      <div class="logo">LAST<i>//</i>ALIVE</div>
+      <div class="sub">DISTRICT 07 // BATTLE ROYALE</div>
 
-  <div class="card">
+      <input
+        id="name"
+        maxlength="14"
+        autocomplete="off"
+        placeholder="ENTER PLAYER NAME"
+      />
 
-    <div class="logo">
-      LAST<i>//</i>ALIVE
+      <button id="enter">
+        DROP INTO DISTRICT →
+      </button>
+    </div>
+  </div>
+
+  <div id="hud">
+
+    <div id="top">
+
+      <div class="hudBox">
+        <div class="label">ALIVE</div>
+        <div class="value" id="alive">12</div>
+      </div>
+
+      <div class="hudBox">
+        <div class="label">ZONE</div>
+        <div class="value" id="zone">150m</div>
+      </div>
+
+      <div class="hudBox">
+        <div class="label">KILLS</div>
+        <div class="value" id="kills">0</div>
+      </div>
+
+      <div class="hudBox">
+        <div class="label">WEAPON</div>
+        <div class="value" id="weapon">AR-01</div>
+      </div>
+
     </div>
 
-    <div class="sub">
-      DISTRICT 07 // BATTLE ROYALE
+    <div id="crosshair"></div>
+
+    <div id="bottom">
+
+      <div class="hudBox stat">
+        <div class="label">HEALTH</div>
+        <div class="value" id="health">100</div>
+      </div>
+
+      <div class="hudBox stat">
+        <div class="label">ARMOR</div>
+        <div class="value" id="armor">100</div>
+      </div>
+
+      <div class="hudBox stat">
+        <div class="label">AMMO</div>
+        <div class="value" id="ammo">30 / 150</div>
+      </div>
+
+      <div class="hudBox stat">
+        <div class="label">MEDKIT</div>
+        <div class="value" id="medkits">2</div>
+      </div>
+
     </div>
 
-    <input
-      id="name"
-      maxlength="14"
-      placeholder="ENTER PLAYER NAME"
-      autocomplete="off"
-    >
-
-    <button id="enter" type="button">
-      DROP INTO DISTRICT →
-    </button>
-
-    <div class="controls">
-      WASD — MOVE &nbsp; SHIFT — SPRINT &nbsp; SPACE — JUMP<br>
-      C — CROUCH &nbsp; MOUSE — AIM &nbsp; LEFT CLICK — SHOOT<br>
-      R — RELOAD &nbsp; V — FIRST / THIRD PERSON &nbsp; 1 / 2 / 3 — WEAPONS
+    <div id="controls">
+      WASD — MOVE<br>
+      SHIFT — SPRINT<br>
+      SPACE — JUMP<br>
+      C — CROUCH<br>
+      MOUSE — AIM<br>
+      LMB — FIRE<br>
+      R — RELOAD<br>
+      1 / 2 / 3 — WEAPON<br>
+      V — CAMERA<br>
+      G — MEDKIT
     </div>
 
   </div>
-
-</div>
-
-
-<div id="hud">
-
-  <div class="brand">
-    LAST<i>//</i>ALIVE
-  </div>
-
-  <div class="box top">
-
-    <small>ALIVE</small>
-
-    <div class="alive" id="alive">
-      12
-    </div>
-
-    <div class="zone" id="zone">
-      ZONE 100%
-    </div>
-
-  </div>
-
-
-  <div id="cross"></div>
-
-  <div id="damage"></div>
-
-
-  <div class="box status">
-
-    <div class="row">
-      <span>HEALTH</span>
-      <b id="hpText">100</b>
-    </div>
-
-    <div class="bar">
-      <div id="hp" class="fill"></div>
-    </div>
-
-
-    <div
-      class="row"
-      style="margin-top:13px"
-    >
-      <span>ARMOR</span>
-      <b id="armorText">65</b>
-    </div>
-
-    <div class="bar">
-      <div id="armor" class="fill blue"></div>
-    </div>
-
-  </div>
-
-
-  <div class="box weapon">
-
-    <small id="weaponName">
-      ASSAULT RIFLE
-    </small>
-
-    <div class="ammo">
-      <b id="mag">30</b>
-      <span>
-        /
-        <span id="reserve">120</span>
-      </span>
-    </div>
-
-    <div class="help">
-      WASD MOVE · SHIFT SPRINT · SPACE JUMP · MOUSE AIM<br>
-      LMB SHOOT · R RELOAD · V 1P/3P · G MEDKIT
-    </div>
-
-  </div>
-
-
-  <div id="mode">
-    THIRD PERSON
-  </div>
-
 
   <div id="result">
-
-    <h1 id="resultTitle">
-      ELIMINATED
-    </h1>
-
-    <p id="resultText"></p>
-
-    <button id="again">
-      PLAY AGAIN
-    </button>
-
+    <div class="resultCard">
+      <h1 id="resultTitle">BOOYAH!</h1>
+      <p id="resultText">WINNER</p>
+      <button id="again">PLAY AGAIN</button>
+    </div>
   </div>
 
-</div>
+  <!-- THREE.JS -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.min.js"></script>
 
+  <!-- GLTF LOADER -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.170.0/examples/js/loaders/GLTFLoader.js"></script>
 
-<!-- THREE.JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
-
-<!-- GAME -->
-<script src="./script.js"></script>
+  <script src="./script.js"></script>
 
 </body>
 </html>
