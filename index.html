@@ -1,522 +1,520 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<title>LAST//ALIVE</title>
+  <title>LAST//ALIVE</title>
 
-<style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    user-select: none;
-    -webkit-user-select: none;
-}
-
-html,
-body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #07100f;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-canvas {
-    position: fixed;
-    inset: 0;
-    display: block;
-    z-index: 1;
-}
-
-#start {
-    position: fixed;
-    inset: 0;
-    z-index: 20;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background:
-        radial-gradient(circle at 50% 40%, #123a35 0%, #07100f 42%, #030606 100%);
-}
-
-.start-card {
-    width: min(460px, calc(100vw - 32px));
-    padding: 38px;
-    border: 1px solid rgba(83, 225, 192, .25);
-    background: rgba(3, 10, 9, .88);
-    box-shadow: 0 30px 100px rgba(0,0,0,.55);
-}
-
-.kicker {
-    color: #55e4c0;
-    font-size: 11px;
-    letter-spacing: 4px;
-    font-weight: 800;
-    margin-bottom: 18px;
-}
-
-.logo {
-    color: white;
-    font-size: clamp(42px, 9vw, 72px);
-    line-height: .9;
-    font-weight: 900;
-    letter-spacing: -5px;
-}
-
-.logo span {
-    color: #55e4c0;
-}
-
-.subtitle {
-    color: #78918d;
-    margin-top: 20px;
-    line-height: 1.7;
-    font-size: 13px;
-}
-
-#name {
-    width: 100%;
-    height: 56px;
-    margin-top: 28px;
-    padding: 0 16px;
-    border: 1px solid #263c38;
-    outline: none;
-    background: #07110f;
-    color: white;
-    font-size: 15px;
-}
-
-#name:focus {
-    border-color: #55e4c0;
-}
-
-#enter {
-    width: 100%;
-    height: 56px;
-    margin-top: 10px;
-    border: 0;
-    cursor: pointer;
-    background: #55e4c0;
-    color: #03100d;
-    font-size: 14px;
-    font-weight: 900;
-    letter-spacing: 1px;
-}
-
-#enter:hover {
-    background: #79f0d0;
-}
-
-.controls {
-    margin-top: 25px;
-    color: #617b76;
-    font-size: 10px;
-    line-height: 2;
-    letter-spacing: 1px;
-}
-
-#loading {
-    display: none;
-    margin-top: 15px;
-    color: #55e4c0;
-    font-size: 11px;
-    letter-spacing: 2px;
-}
-
-/* HUD */
-
-#hud {
-    position: fixed;
-    inset: 0;
-    z-index: 10;
-    pointer-events: none;
-    display: none;
-}
-
-.hud-top {
-    position: absolute;
-    top: 18px;
-    left: 18px;
-    right: 18px;
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.hud-box {
-    min-width: 90px;
-    padding: 10px 14px;
-    border: 1px solid rgba(255,255,255,.12);
-    background: rgba(3,8,8,.72);
-    backdrop-filter: blur(8px);
-}
-
-.hud-label {
-    color: #6f8782;
-    font-size: 9px;
-    letter-spacing: 2px;
-}
-
-.hud-value {
-    margin-top: 4px;
-    color: white;
-    font-size: 21px;
-    font-weight: 900;
-}
-
-#crosshair {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 22px;
-    height: 22px;
-    transform: translate(-50%, -50%);
-}
-
-#crosshair::before,
-#crosshair::after {
-    content: "";
-    position: absolute;
-    background: rgba(255,255,255,.9);
-}
-
-#crosshair::before {
-    width: 22px;
-    height: 2px;
-    left: 0;
-    top: 10px;
-}
-
-#crosshair::after {
-    width: 2px;
-    height: 22px;
-    left: 10px;
-    top: 0;
-}
-
-.hud-bottom {
-    position: absolute;
-    left: 18px;
-    bottom: 18px;
-    display: flex;
-    gap: 8px;
-}
-
-.stat {
-    min-width: 105px;
-    padding: 11px 14px;
-    background: rgba(3,8,8,.78);
-    border: 1px solid rgba(255,255,255,.1);
-}
-
-.stat small {
-    display: block;
-    color: #6d8781;
-    font-size: 8px;
-    letter-spacing: 2px;
-}
-
-.stat strong {
-    display: block;
-    color: white;
-    font-size: 20px;
-    margin-top: 3px;
-}
-
-#mobile {
-    display: none;
-}
-
-#joystick {
-    position: fixed;
-    left: 24px;
-    bottom: 28px;
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
-    background: rgba(255,255,255,.07);
-    border: 2px solid rgba(255,255,255,.15);
-    z-index: 30;
-    touch-action: none;
-}
-
-#stick {
-    position: absolute;
-    width: 55px;
-    height: 55px;
-    left: 37px;
-    top: 37px;
-    border-radius: 50%;
-    background: rgba(85,228,192,.75);
-    box-shadow: 0 0 25px rgba(85,228,192,.25);
-}
-
-.mobile-btn {
-    position: fixed;
-    z-index: 30;
-    width: 68px;
-    height: 68px;
-    border-radius: 50%;
-    border: 1px solid rgba(255,255,255,.2);
-    background: rgba(5,12,11,.72);
-    color: white;
-    font-size: 11px;
-    font-weight: 900;
-    touch-action: none;
-}
-
-#fireBtn {
-    right: 25px;
-    bottom: 45px;
-    width: 82px;
-    height: 82px;
-    background: rgba(214,55,55,.72);
-}
-
-#jumpBtn {
-    right: 125px;
-    bottom: 48px;
-}
-
-#sprintBtn {
-    right: 130px;
-    bottom: 130px;
-}
-
-#aimZone {
-    position: fixed;
-    right: 0;
-    top: 0;
-    width: 52%;
-    height: 70%;
-    z-index: 25;
-    display: none;
-    touch-action: none;
-}
-
-#result {
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0,0,0,.72);
-}
-
-.result-card {
-    text-align: center;
-    padding: 45px;
-    background: #07100f;
-    border: 1px solid rgba(85,228,192,.25);
-}
-
-#resultTitle {
-    color: white;
-    font-size: 52px;
-    font-weight: 900;
-}
-
-#resultText {
-    color: #77908b;
-    margin-top: 10px;
-}
-
-#again {
-    margin-top: 25px;
-    width: 180px;
-    height: 48px;
-    border: 0;
-    background: #55e4c0;
-    font-weight: 900;
-    cursor: pointer;
-}
-
-@media (max-width: 700px) {
-    .hud-top {
-        top: 8px;
-        left: 8px;
-        right: 8px;
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
-    .hud-box {
-        min-width: 62px;
-        padding: 7px 8px;
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #020605;
+      font-family: Arial, Helvetica, sans-serif;
+      color: white;
     }
 
-    .hud-value {
-        font-size: 15px;
+    body {
+      touch-action: none;
     }
 
-    .hud-bottom {
-        left: 8px;
-        bottom: 8px;
+    #gameCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      z-index: 1;
     }
 
-    .stat {
-        min-width: 68px;
-        padding: 7px;
+    #startScreen {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(
+          circle at 50% 35%,
+          rgba(25, 110, 90, .16),
+          transparent 45%
+        ),
+        #020605;
     }
 
-    .stat strong {
-        font-size: 15px;
+    .start-card {
+      width: min(520px, 90vw);
+      padding: 42px;
+      border: 1px solid rgba(90, 230, 190, .18);
+      background: rgba(3, 10, 9, .94);
+      box-shadow:
+        0 30px 100px rgba(0,0,0,.65),
+        inset 0 0 80px rgba(40,220,170,.025);
     }
 
-    #mobile {
-        display: block;
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 5px;
+      font-weight: 800;
+      color: #59e5bd;
+      margin-bottom: 22px;
     }
 
-    #aimZone {
-        display: block;
+    .logo {
+      font-size: clamp(42px, 8vw, 76px);
+      font-weight: 1000;
+      letter-spacing: -5px;
+      line-height: .9;
+      white-space: nowrap;
     }
 
-    #crosshair {
-        top: 48%;
+    .logo span {
+      color: #59e5bd;
+    }
+
+    .description {
+      margin-top: 28px;
+      color: #71847f;
+      line-height: 1.7;
+      font-size: 14px;
+      max-width: 430px;
+    }
+
+    #playerName {
+      width: 100%;
+      height: 58px;
+      margin-top: 30px;
+      border: 1px solid #1b3932;
+      outline: none;
+      background: #07100e;
+      color: white;
+      padding: 0 18px;
+      font-size: 16px;
+    }
+
+    #playerName:focus {
+      border-color: #59e5bd;
+    }
+
+    #dropButton {
+      width: 100%;
+      height: 60px;
+      margin-top: 12px;
+      border: 0;
+      background: #59e5bd;
+      color: #00100c;
+      font-size: 15px;
+      font-weight: 1000;
+      letter-spacing: 1px;
+      cursor: pointer;
+    }
+
+    #dropButton:hover {
+      background: #75f0ca;
+    }
+
+    #dropButton:active {
+      transform: translateY(1px);
+    }
+
+    #status {
+      min-height: 20px;
+      margin-top: 14px;
+      text-align: center;
+      color: #668078;
+      font-size: 11px;
+      letter-spacing: 2px;
     }
 
     .controls {
-        font-size: 9px;
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 18px;
+      color: #52655f;
+      font-size: 11px;
+      letter-spacing: 1px;
     }
-}
-</style>
+
+    #hud {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .hud-box {
+      position: absolute;
+      min-width: 100px;
+      padding: 13px 17px;
+      background: rgba(3, 9, 8, .78);
+      border: 1px solid rgba(255,255,255,.08);
+      backdrop-filter: blur(8px);
+    }
+
+    .hud-label {
+      color: #688079;
+      font-size: 9px;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .hud-value {
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    #aliveBox {
+      left: 20px;
+      top: 20px;
+    }
+
+    #zoneBox {
+      left: 50%;
+      top: 20px;
+      transform: translateX(-50%);
+    }
+
+    #killBox {
+      right: 150px;
+      top: 20px;
+    }
+
+    #weaponBox {
+      right: 20px;
+      top: 20px;
+    }
+
+    #bottomHUD {
+      left: 20px;
+      bottom: 20px;
+      position: absolute;
+      display: flex;
+      gap: 8px;
+    }
+
+    .barBox {
+      min-width: 100px;
+      padding: 12px 15px;
+      background: rgba(3, 9, 8, .8);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    #crosshair {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 22px;
+      height: 22px;
+      transform: translate(-50%, -50%);
+    }
+
+    #crosshair::before,
+    #crosshair::after {
+      content: "";
+      position: absolute;
+      background: rgba(255,255,255,.9);
+    }
+
+    #crosshair::before {
+      width: 2px;
+      height: 22px;
+      left: 10px;
+    }
+
+    #crosshair::after {
+      height: 2px;
+      width: 22px;
+      top: 10px;
+    }
+
+    #mobileControls {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      pointer-events: none;
+    }
+
+    .mobile-btn {
+      pointer-events: auto;
+      position: absolute;
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.2);
+      background: rgba(5,15,13,.72);
+      color: white;
+      font-weight: 900;
+      backdrop-filter: blur(8px);
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    #mUp {
+      left: 78px;
+      bottom: 135px;
+    }
+
+    #mLeft {
+      left: 10px;
+      bottom: 68px;
+    }
+
+    #mDown {
+      left: 78px;
+      bottom: 68px;
+    }
+
+    #mRight {
+      left: 146px;
+      bottom: 68px;
+    }
+
+    #mShoot {
+      right: 24px;
+      bottom: 100px;
+      width: 76px;
+      height: 76px;
+      background: rgba(190,55,55,.65);
+    }
+
+    #mSprint {
+      right: 115px;
+      bottom: 35px;
+    }
+
+    #mJump {
+      right: 25px;
+      bottom: 25px;
+    }
+
+    #result {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.72);
+    }
+
+    .result-card {
+      text-align: center;
+      padding: 45px;
+      background: #050b09;
+      border: 1px solid #21483e;
+      width: min(430px, 90vw);
+    }
+
+    #resultTitle {
+      font-size: 48px;
+      font-weight: 1000;
+    }
+
+    #resultText {
+      color: #71847f;
+      margin: 15px 0 25px;
+    }
+
+    #again {
+      width: 100%;
+      height: 52px;
+      border: 0;
+      background: #59e5bd;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    @media (max-width: 700px) {
+      .start-card {
+        padding: 28px 22px;
+      }
+
+      .logo {
+        font-size: 48px;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      #mobileControls {
+        display: block;
+      }
+
+      #killBox {
+        display: none;
+      }
+
+      #bottomHUD {
+        bottom: 15px;
+        left: 15px;
+      }
+
+      .barBox {
+        min-width: 75px;
+        padding: 9px;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-<div id="start">
+  <div id="startScreen">
     <div class="start-card">
 
-        <div class="kicker">DISTRICT 09 // BATTLE ROYALE</div>
+      <div class="eyebrow">DISTRICT 09 // BATTLE ROYALE</div>
 
-        <div class="logo">
-            LAST<span>//</span>ALIVE
-        </div>
+      <div class="logo">
+        LAST<span>//</span>ALIVE
+      </div>
 
-        <div class="subtitle">
-            Drop into the combat zone.<br>
-            Move fast. Aim clean. Survive.
-        </div>
+      <div class="description">
+        Drop into the combat zone.
+        Move fast. Aim clean. Survive.
+      </div>
 
-        <input
-            id="name"
-            maxlength="16"
-            autocomplete="off"
-            placeholder="ENTER PLAYER NAME"
-        >
+      <input
+        id="playerName"
+        type="text"
+        maxlength="14"
+        autocomplete="off"
+        placeholder="ENTER PLAYER NAME"
+      >
 
-        <button id="enter">
-            DROP INTO DISTRICT →
-        </button>
+      <button id="dropButton" type="button">
+        DROP INTO DISTRICT →
+      </button>
 
-        <div id="loading">
-            INITIALIZING 3D ENGINE...
-        </div>
+      <div id="status"></div>
 
-        <div class="controls">
-            WASD / ARROWS — MOVE<br>
-            SHIFT — SPRINT<br>
-            SPACE — JUMP<br>
-            MOUSE — AIM<br>
-            LEFT CLICK — FIRE<br>
-            R — RELOAD
-        </div>
+      <div class="controls">
+        <div>WASD / ARROWS — MOVE</div>
+        <div>SHIFT — SPRINT</div>
+        <div>MOUSE — AIM</div>
+        <div>LEFT CLICK — FIRE</div>
+        <div>SPACE — JUMP</div>
+        <div>R — RELOAD</div>
+      </div>
 
     </div>
-</div>
+  </div>
 
-<div id="hud">
+  <canvas id="gameCanvas"></canvas>
 
-    <div class="hud-top">
+  <div id="hud">
 
-        <div class="hud-box">
-            <div class="hud-label">ALIVE</div>
-            <div class="hud-value" id="alive">12</div>
-        </div>
+    <div id="aliveBox" class="hud-box">
+      <div class="hud-label">ALIVE</div>
+      <div id="alive" class="hud-value">12</div>
+    </div>
 
-        <div class="hud-box">
-            <div class="hud-label">ZONE</div>
-            <div class="hud-value" id="zone">180m</div>
-        </div>
+    <div id="zoneBox" class="hud-box">
+      <div class="hud-label">ZONE</div>
+      <div id="zone" class="hud-value">500m</div>
+    </div>
 
-        <div class="hud-box">
-            <div class="hud-label">KILLS</div>
-            <div class="hud-value" id="kills">0</div>
-        </div>
+    <div id="killBox" class="hud-box">
+      <div class="hud-label">KILLS</div>
+      <div id="kills" class="hud-value">0</div>
+    </div>
 
-        <div class="hud-box">
-            <div class="hud-label">WEAPON</div>
-            <div class="hud-value" id="weapon">AR-01</div>
-        </div>
+    <div id="weaponBox" class="hud-box">
+      <div class="hud-label">WEAPON</div>
+      <div id="weapon" class="hud-value">AR-01</div>
+    </div>
+
+    <div id="bottomHUD">
+
+      <div class="barBox">
+        <div class="hud-label">HP</div>
+        <div id="health" class="hud-value">100</div>
+      </div>
+
+      <div class="barBox">
+        <div class="hud-label">ARMOR</div>
+        <div id="armor" class="hud-value">100</div>
+      </div>
+
+      <div class="barBox">
+        <div class="hud-label">AMMO</div>
+        <div id="ammo" class="hud-value">30 / 150</div>
+      </div>
+
+      <div class="barBox">
+        <div class="hud-label">MED</div>
+        <div id="medkits" class="hud-value">2</div>
+      </div>
 
     </div>
 
     <div id="crosshair"></div>
+  </div>
 
-    <div class="hud-bottom">
+  <div id="mobileControls">
 
-        <div class="stat">
-            <small>HP</small>
-            <strong id="health">100</strong>
-        </div>
+    <button class="mobile-btn" id="mUp">▲</button>
+    <button class="mobile-btn" id="mLeft">◀</button>
+    <button class="mobile-btn" id="mDown">▼</button>
+    <button class="mobile-btn" id="mRight">▶</button>
 
-        <div class="stat">
-            <small>ARMOR</small>
-            <strong id="armor">100</strong>
-        </div>
+    <button class="mobile-btn" id="mShoot">FIRE</button>
+    <button class="mobile-btn" id="mSprint">RUN</button>
+    <button class="mobile-btn" id="mJump">JUMP</button>
 
-        <div class="stat">
-            <small>AMMO</small>
-            <strong id="ammo">30 / 150</strong>
-        </div>
+  </div>
 
-        <div class="stat">
-            <small>MEDKIT</small>
-            <strong id="medkits">2</strong>
-        </div>
-
-    </div>
-
-</div>
-
-<div id="mobile">
-
-    <div id="joystick">
-        <div id="stick"></div>
-    </div>
-
-    <button class="mobile-btn" id="fireBtn">
-        FIRE
-    </button>
-
-    <button class="mobile-btn" id="jumpBtn">
-        JUMP
-    </button>
-
-    <button class="mobile-btn" id="sprintBtn">
-        RUN
-    </button>
-
-    <div id="aimZone"></div>
-
-</div>
-
-<div id="result">
+  <div id="result">
     <div class="result-card">
-        <div id="resultTitle">ELIMINATED</div>
-        <div id="resultText">0 ELIMINATIONS</div>
-        <button id="again">PLAY AGAIN</button>
+      <div id="resultTitle">ELIMINATED</div>
+      <div id="resultText"></div>
+      <button id="again">PLAY AGAIN</button>
     </div>
-</div>
+  </div>
 
-<!-- ONLY ONE THREE.JS SCRIPT -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.min.js"></script>
 
-<!-- YOUR GAME -->
-<script src="./script.js"></script>
+  <!-- THREE.JS -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.min.js">
+  </script>
+
+  <!-- FALLBACK -->
+  <script>
+    window.THREE_READY = false;
+
+    function loadGameScript() {
+      const s = document.createElement("script");
+      s.src = "./script.js?v=100";
+      s.onload = function () {
+        window.THREE_READY = true;
+        console.log("LAST//ALIVE JS loaded");
+      };
+      s.onerror = function () {
+        const status = document.getElementById("status");
+        if (status) {
+          status.textContent = "GAME SCRIPT FAILED TO LOAD";
+        }
+      };
+      document.body.appendChild(s);
+    }
+
+    window.addEventListener("load", loadGameScript);
+  </script>
 
 </body>
 </html>
